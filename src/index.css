@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --neo-yellow: #FCD34D;
+    --neo-orange: #FB923C;
+    --neo-purple: #A78BFA;
+    --neo-turquoise: #6EE7B7;
+    --neo-pink: #FDA4AF;
+    --neo-blue: #7DD3FC;
+    --neo-border: #111827;
+  }
+  body {
+    @apply font-['Poppins',_sans-serif] min-h-screen text-slate-900;
+    background-color: #F9FAFB;
+  }
+}
+
+@layer components {
+  .brutalist-card {
+    @apply bg-white rounded-2xl transition-all;
+    border: 2px solid var(--neo-border) !important;
+    box-shadow: 4px 4px 0px var(--neo-border) !important;
+    color: var(--neo-border) !important;
+  }
+
+  .brutalist-card:hover {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 2px 2px 0px var(--neo-border) !important;
+  }
+
+  .brutalist-button {
+    @apply transition-all;
+    border: 2px solid var(--neo-border) !important;
+    box-shadow: 4px 4px 0px var(--neo-border) !important;
+    font-weight: 900 !important;
+  }
+
+  .brutalist-button:hover {
+    transform: translate(2px, 2px) !important;
+    box-shadow: 2px 2px 0px var(--neo-border) !important;
+  }
+
+  .brutalist-button:active {
+    transform: translate(4px, 4px) !important;
+    box-shadow: 0px 0px 0px var(--neo-border) !important;
+  }
+
+  @keyframes stat-pop {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+  }
+
+  .animate-stat-pop {
+    animation: stat-pop 0.3s ease-out;
+  }
+}
+
