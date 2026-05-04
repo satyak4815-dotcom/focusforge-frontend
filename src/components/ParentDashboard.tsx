@@ -310,11 +310,11 @@ export default function ParentDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen min-w-0 max-w-[100vw] flex-row overflow-x-hidden bg-pop-cream text-pop-maroon">
+    <div className="flex min-h-screen min-w-0 max-w-[100vw] flex-col gap-4 overflow-x-hidden bg-pop-cream text-pop-maroon md:flex-row md:gap-0">
       
-      {/* SIDEBAR */}
+      {/* SIDEBAR — full-width stack on <md; unchanged fixed sidebar from md+ */}
       <aside
-        className="sticky top-0 flex h-screen w-[280px] shrink-0 flex-col border-r-2 border-pop-maroon bg-pop-white"
+        className="relative flex w-full shrink-0 flex-col border-b-2 border-pop-maroon bg-pop-white max-md:h-auto md:sticky md:top-0 md:h-screen md:w-[280px] md:border-b-0 md:border-r-2"
       >
         <div className="border-b-2 border-pop-maroon bg-pop-teal px-5 py-6 text-pop-white">
           <div className="flex items-center gap-3">
@@ -380,22 +380,22 @@ export default function ParentDashboard() {
         </div>
       </aside>
 
-      {/* MAIN CONTENT */}
-      <main className="flex-1 flex flex-col min-w-0 min-h-0 h-screen overflow-y-auto overflow-x-hidden">
+      {/* MAIN CONTENT — document scroll on small screens; scrollable main column from md+ only */}
+      <main className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-x-hidden max-md:h-auto max-md:overflow-y-visible md:h-screen md:overflow-y-auto">
         {/* Header */}
-        <header className="sticky top-0 z-20 flex items-center justify-between border-b-4 border-pop-maroon bg-pop-teal px-6 py-8 text-pop-white sm:px-10">
-          <div>
+        <header className="sticky top-0 z-20 flex flex-col gap-4 border-b-4 border-pop-maroon bg-pop-teal px-6 py-8 text-pop-white sm:px-10 md:flex-row md:items-center md:justify-between md:gap-0">
+          <div className="min-w-0">
             <p className="mb-1 font-display text-xs font-bold uppercase tracking-widest text-pop-white/85">Viewing profile for</p>
-            <h1 className="flex items-center gap-4 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
+            <h1 className="flex flex-wrap items-center gap-3 font-display text-3xl font-bold uppercase tracking-tight sm:gap-4 sm:text-4xl">
               {selectedKid ? selectedKid.username : '...'}
               {selectedKid && (
-                <span className="rounded-full border-2 border-pop-maroon bg-pop-mustard px-3 py-1 font-display text-sm font-bold text-pop-maroon shadow-pop">
+                <span className="shrink-0 rounded-full border-2 border-pop-maroon bg-pop-mustard px-3 py-1 font-display text-sm font-bold text-pop-maroon shadow-pop">
                   Level {selectedKid.level || 1}
                 </span>
               )}
             </h1>
           </div>
-          <div className="text-right">
+          <div className="text-left md:text-right">
             <p className="font-sans text-sm font-semibold text-pop-white/90">Welcome back,</p>
             <p className="font-display uppercase tracking-widest text-pop-white">{username || 'Parent'}</p>
           </div>
@@ -403,25 +403,29 @@ export default function ParentDashboard() {
 
         <div className="p-4 sm:p-8 max-w-6xl mx-auto w-full min-w-0 max-w-full flex flex-col gap-8 box-border">
           
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="brutalist-card bg-[var(--neo-yellow)] p-6 flex flex-col justify-between">
-              <div className="flex items-center justify-between mb-4">
+          {/* Stats Cards — w-full / min-w-0 on small screens so cards use full content width */}
+          <div className="grid w-full min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="brutalist-card flex w-full min-w-0 flex-col justify-between bg-[var(--neo-yellow)] p-6">
+              <div className="mb-4 flex items-center justify-between gap-2">
                 <h3 className="font-black uppercase tracking-widest text-sm">Current XP</h3>
-                <Zap className="w-6 h-6" />
+                <Zap className="h-6 w-6 shrink-0" />
               </div>
-              <div className="flex items-end gap-2">
+              <div className="flex min-w-0 flex-wrap items-end gap-2">
                 <span className="text-5xl font-black tracking-tighter">
                   {selectedKid ? (selectedKid.focusXP || 0).toLocaleString() : '0'}
                 </span>
-                <span className="text-sm font-bold uppercase pb-1">XP</span>
+                <span className="pb-1 text-sm font-bold uppercase">XP</span>
               </div>
               
-              {/* Level Progress Bar */}
-              <div className="mt-6">
-                <div className="flex justify-between text-xs font-black uppercase mb-2">
-                  <span>Level {selectedKid?.level || 1}</span>
-                  <span>Level {(selectedKid?.level || 1) + 1}</span>
+              {/* Level Progress Bar — grid + nowrap on <md avoids squashed / overlapping labels */}
+              <div className="mt-6 min-w-0">
+                <div className="mb-2 grid grid-cols-2 gap-2 text-xs font-black uppercase max-md:gap-x-3 md:flex md:justify-between">
+                  <span className="min-w-0 truncate whitespace-nowrap max-md:justify-self-start">
+                    Level {selectedKid?.level || 1}
+                  </span>
+                  <span className="min-w-0 truncate whitespace-nowrap text-right max-md:justify-self-end md:text-right">
+                    Level {(selectedKid?.level || 1) + 1}
+                  </span>
                 </div>
                 <div className="w-full h-6 border-2 border-pop-maroon bg-white rounded-full overflow-hidden">
                   <div 
@@ -432,7 +436,7 @@ export default function ParentDashboard() {
               </div>
             </div>
 
-            <div className="brutalist-card bg-[var(--neo-blue)] p-6 flex flex-col justify-between">
+            <div className="brutalist-card flex w-full min-w-0 flex-col justify-between bg-[var(--neo-blue)] p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-black uppercase tracking-widest text-sm">Total Focus Time</h3>
                 <Target className="w-6 h-6" />
@@ -458,8 +462,8 @@ export default function ParentDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
             {/* Focus Analytics Chart */}
-            <div className="brutalist-card bg-white p-6 flex flex-col min-w-0 overflow-hidden">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 shrink-0">
+            <div className="brutalist-card flex w-full min-w-0 flex-col overflow-hidden bg-white p-6">
+              <div className="mb-4 flex shrink-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <h3 className="font-black uppercase tracking-widest text-sm">Focus Analytics (7 Days)</h3>
                 <div className="flex flex-wrap items-center gap-2 text-xs font-bold">
                   <span className="flex items-center gap-1"><div className="w-3 h-3 bg-[var(--neo-yellow)] border border-pop-maroon shrink-0" /> Older</span>
@@ -467,8 +471,8 @@ export default function ParentDashboard() {
                 </div>
               </div>
               
-              <div className="w-full h-[280px] sm:h-[300px] shrink-0" aria-label="Focus minutes per day chart">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[280px] w-full min-w-0 shrink-0 sm:h-[300px]" aria-label="Focus minutes per day chart">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <BarChart data={MOCK_WEEKLY_DATA} margin={{ top: 12, right: 8, left: 4, bottom: 8 }} barCategoryGap="18%">
                     <XAxis 
                       dataKey="day" 
@@ -531,8 +535,10 @@ export default function ParentDashboard() {
                 </div>
               </div>
               
-              <div className="flex-1 min-h-[200px] max-h-[min(420px,50vh)] overflow-y-auto overflow-x-hidden bg-white">
-                <table className="w-full min-w-0 table-fixed text-left border-collapse relative z-0">
+              <div className="min-h-[200px] max-h-[min(420px,50vh)] flex-1 overflow-y-auto bg-white max-md:overflow-x-visible md:overflow-x-hidden">
+                <div className="max-md:-mx-4 max-md:px-4 md:mx-0 md:px-0">
+                  <div className="max-md:overflow-x-auto max-md:overflow-y-visible md:overflow-visible">
+                    <table className="relative z-0 w-full min-w-[600px] border-collapse text-left table-auto md:min-w-0 md:table-fixed">
                   <colgroup>
                     <col className="w-[45%]" />
                     <col className="w-[35%]" />
@@ -540,9 +546,9 @@ export default function ParentDashboard() {
                   </colgroup>
                   <thead>
                     <tr className="bg-[var(--neo-yellow)] border-b-2 border-pop-maroon">
-                      <th className="px-3 sm:px-4 py-3 text-xs font-black uppercase tracking-widest border-r-2 border-pop-maroon align-top">Site</th>
-                      <th className="px-3 sm:px-4 py-3 text-xs font-black uppercase tracking-widest border-r-2 border-pop-maroon align-top">Time</th>
-                      <th className="px-3 sm:px-4 py-3 text-xs font-black uppercase tracking-widest align-top">Status</th>
+                      <th className="min-w-[11rem] px-3 py-3 text-left text-xs font-black uppercase tracking-widest align-top border-r-2 border-pop-maroon sm:min-w-[12rem] sm:px-4 md:min-w-0">Site</th>
+                      <th className="min-w-[9rem] px-3 py-3 text-left text-xs font-black uppercase tracking-widest align-top border-r-2 border-pop-maroon sm:px-4 md:min-w-0">Time</th>
+                      <th className="min-w-[6.5rem] px-3 py-3 text-left text-xs font-black uppercase tracking-widest align-top sm:px-4 md:min-w-0">Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -596,6 +602,8 @@ export default function ParentDashboard() {
                     )}
                   </tbody>
                 </table>
+                  </div>
+                </div>
               </div>
             </div>
 
