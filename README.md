@@ -1,79 +1,65 @@
-# ⚡ FocusForge: Gamified Productivity Suite
+# FocusForge — Web Dashboard (Frontend)
 
-FocusForge is a high-energy, Neo-Brutalist productivity ecosystem designed to help users crush distractions and level up their focus. It combines a dynamic React dashboard, a robust Node.js/Express backend, and a high-performance Chrome Extension.
+This repository is the **FocusForge** user dashboard: a Vite + React + TypeScript SPA with a Neo-Brutalist UI. It talks to the FocusForge REST API for auth, sessions, squads, blocklists, and rewards. A separate backend and optional browser extension complete the product; see [PROJECT_ARCHITECTURE.md](./PROJECT_ARCHITECTURE.md) for the full system picture.
 
-## 🚀 Key Features
+## Key features
 
-- **Gamified Focus**: Earn XP and level up for every minute you stay focused.
-- **Neo-Brutalist UI**: A bold, high-contrast design system featuring Mustard Yellow (#FCD34D), Lavender (#A78BFA), and Mint Green (#6EE7B7) with thick black borders and sharp shadows.
-- **Squad Sync**: Real-time social analytics to see how you rank against your squad's focus vs. doomscrolling ratios.
-- **Focus Guard (Extension)**: Active domain blocking with mindfulness-driven interception overlays.
-- **Blocklist Management**: Directly manage your intercepted domains from the dashboard.
-- **Rewards Store**: Redeem your hard-earned XP for brand-name rewards (Zomato, Amazon, etc.).
-- **Parent Portal**: Dedicated dashboard for parents to monitor their linked kids' focus analytics, XP progression, and distraction patterns.
-- **Dynamic Analytics**: 7-day attention breakdown using customized Recharts visualizations.
+- **Gamified focus**: XP, levels, and streaks tied to focus sessions.
+- **Neo-Brutalist UI**: High-contrast layout (mustard, teal/maroon accents, thick borders, pop shadows) built with Tailwind CSS.
+- **Squad sync**: Leaderboards and squad analytics.
+- **Blocklist**: Manage blocked domains from the dashboard.
+- **Rewards store**: Redeem XP for rewards.
+- **Parent portal**: Parent-facing dashboard for linked accounts and activity.
+- **Analytics**: Charts (including Recharts) and a visited-sites **pie chart** that shows the **top 5 domains** plus an **Other** bucket for the rest.
 
-## 🛠️ Tech Stack
+## Tech stack
 
-### Frontend
-- **React 18** (TypeScript)
-- **Vite** (Build Tool)
-- **Tailwind CSS** (Styling)
-- **React Context** (State Management)
-- **Recharts** (Data Visualization)
-- **Lucide React** (Icons)
+- React 18, TypeScript, Vite
+- Tailwind CSS, Recharts, Lucide React
+- Axios for HTTP
 
-### Backend
-- **Node.js & Express**
-- **MongoDB Atlas** (Database)
-- **JWT** (Authentication)
-- **Bcrypt** (Password Hashing)
+## Scripts
 
-### Extension
-- **Chrome Manifest V3**
-- **JavaScript/TypeScript** (Service Workers & Content Scripts)
+| Command            | Description                    |
+| ------------------ | ------------------------------ |
+| `npm run dev`      | Dev server (default port 5173, `--host`) |
+| `npm run build`    | Production build to `dist/`    |
+| `npm run preview`  | Serve the production build locally |
+| `npm run lint`     | ESLint                         |
+| `npm run typecheck`| TypeScript check (no emit)     |
 
-## 🏁 Getting Started
+## Prerequisites
 
-### 1. Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) account
+- [Node.js](https://nodejs.org/) 18 or newer
+- Running FocusForge **backend** API (see backend repo) if you need live data
 
-### 2. Frontend Setup
+## Getting started
+
 ```bash
-# Navigate to the frontend directory
 cd focusforge-frontend
 npm install
 npm run dev
 ```
-Dashboard will be available at `http://localhost:5173`.
 
-### 3. Backend Setup
-```bash
-# Navigate to the backend directory
-cd focusforge-backend
-npm install
-# Configure your .env with MONGO_URI and JWT_SECRET
-npm run dev
-```
-API will be available at `http://localhost:5000`.
+Open the app at `http://localhost:5173` (or the URL Vite prints).
 
-### 4. Extension Setup
-1. Open Chrome and navigate to `chrome://extensions/`.
-2. Enable **Developer mode**.
-3. Click **Load unpacked**.
-4. Select the `focus-guard` directory.
+### API base URL
 
-## 🏗️ Architecture
-For a deep dive into the system design, data flow, and technology layers, refer to the [PROJECT_ARCHITECTURE.md](./PROJECT_ARCHITECTURE.md).
+The client uses `API_BASE_URL` from [`src/config.ts`](./src/config.ts). By default it targets the deployed API; for local development, switch it to the local value commented in that file (typically `http://localhost:3000/api`) so it matches your backend.
 
-## 🎨 Design Language
-FocusForge uses a strict **Neo-Brutalist** aesthetic:
-- **Primary Color**: #FCD34D (Mustard Yellow)
-- **Accent Color**: #A78BFA (Lavender Purple)
-- **Success Color**: #6EE7B7 (Mint Green)
-- **Border**: 2px solid #111827
-- **Shadow**: 4px 4px 0px #111827 (Sharp, non-blurred)
+### PWA
+
+`public/manifest.json` and `public/service-worker.js` support installable / offline-friendly behavior; the service worker is registered in production builds (see `src/main.tsx`).
+
+## Related repos
+
+- **Backend**: Node/Express API, JWT auth, and persistence (not in this tree). Configure CORS and the same API path your `API_BASE_URL` uses.
+- **Chrome extension (“Focus Guard”)**: If you maintain it separately, load that extension’s unpacked folder from its own repository; it is not bundled here.
+
+## Design notes
+
+Neo-Brutalist styling favors strong borders, flat color blocks, and offset shadows. Component-level tokens live in Tailwind theme extensions (`tailwind.config.js`) and shared CSS (`src/index.css`).
 
 ---
-*Created by the FocusForge Team. Build better habits, one session at a time.*
+
+*FocusForge — build better habits, one session at a time.*

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Loader2, Zap, ArrowLeft, User, Users, Plus, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Zap, ArrowLeft, User, Users, Plus, Trash2, Eye, EyeOff, HelpCircle } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 import { auth, parents } from '../services/api';
+import AuthHelpPage from './AuthHelpPage';
 
 type ViewState = 'role_select' | 'login_kid' | 'login_parent' | 'signup_kid' | 'signup_parent';
 
@@ -18,6 +19,7 @@ export default function AuthPage() {
   const [email, setEmail] = useState('');
 
   const [kidLinks, setKidLinks] = useState([{ username: '', password: '' }]);
+  const [showHelp, setShowHelp] = useState(false);
 
   const { login } = useAppContext();
 
@@ -166,8 +168,12 @@ export default function AuthPage() {
     </div>
   );
 
+  if (showHelp) {
+    return <AuthHelpPage onClose={() => setShowHelp(false)} />;
+  }
+
   return (
-    <div className="flex min-h-screen flex-col bg-pop-cream">
+    <div className="relative flex min-h-screen flex-col bg-pop-cream">
       <section className="bg-pop-teal py-10 text-center text-pop-white sm:py-14">
         <p className="font-display text-xs font-bold uppercase tracking-[0.35em] text-pop-white/90">Retro-modern focus</p>
         <h1 className="mt-2 font-display text-4xl font-bold uppercase tracking-tight text-pop-white sm:text-5xl">FocusForge</h1>
@@ -390,6 +396,17 @@ export default function AuthPage() {
       <footer className="mt-auto border-t-4 border-pop-maroon bg-pop-maroon py-6 text-center font-display text-xs font-bold uppercase tracking-widest text-pop-white">
         FocusForge · Built for deep work
       </footer>
+
+      <button
+        type="button"
+        onClick={() => setShowHelp(true)}
+        className="brutalist-button fixed bottom-5 left-4 z-50 flex items-center gap-2 rounded-full border-2 border-pop-maroon bg-pop-mustard px-4 py-3 font-display text-xs font-bold uppercase tracking-wider text-pop-maroon shadow-pop-md transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:bg-pop-mustard/95 sm:bottom-6 sm:left-6"
+        style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}
+        aria-label="Open help and user guide"
+      >
+        <HelpCircle className="h-5 w-5 shrink-0" strokeWidth={2.25} aria-hidden />
+        HELP!
+      </button>
     </div>
   );
 }

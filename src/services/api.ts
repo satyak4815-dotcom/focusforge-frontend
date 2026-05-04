@@ -14,6 +14,59 @@ export interface UserProfile {
   squadId: string | null;
   distractionsBlocked: number;
   blockedSites: string[];
+  /** Raw website visit log — shape varies by backend; kid dashboard aggregates for charts. */
+  visitedWebsite?: unknown[];
+  visitedWebsites?: unknown[];
+  websiteVisits?: unknown[];
+  visited_websites?: unknown[];
+}
+
+/** Pull `visitedWebsites` (and aliases) from a user/profile JSON blob — supports nested `user` / `profile`. */
+function extractVisitedWebsitesFromUserDoc(doc: unknown): unknown[] {
+  if (!doc || typeof doc !== 'object') return [];
+  const root = doc as Record<string, unknown>;
+  const nestedObjects: Record<string, unknown>[] = [root];
+  for (const key of ['user', 'profile', 'data'] as const) {
+    const inner = root[key];
+    if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+      nestedObjects.push(inner as Record<string, unknown>);
+    }
+  }
+
+  const arrayKeys = [
+    'visitedWebsites',
+    'visitedWebsite',
+    'websiteVisits',
+    'visited_websites',
+    'visited_website',
+    'website_visits',
+  ];
+
+  for (const obj of nestedObjects) {
+    for (const k of arrayKeys) {
+      const v = obj[k];
+      if (Array.isArray(v) && v.length > 0) return v;
+    }
+  }
+  for (const obj of nestedObjects) {
+    for (const k of arrayKeys) {
+      const v = obj[k];
+      if (Array.isArray(v)) return v;
+    }
+  }
+  return [];
+}
+
+function normalizeVisitedWebsitesPayload(data: unknown): unknown[] {
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === 'object') {
+    const o = data as Record<string, unknown>;
+    for (const k of ['visitedWebsites', 'visitedWebsite', 'websiteVisits', 'items', 'data']) {
+      const v = o[k];
+      if (Array.isArray(v)) return v;
+    }
+  }
+  return [];
 }
 
 export interface UserStats {
@@ -137,6 +190,30 @@ export const user = {
   // Main kid profile payload used for username, XP, level, squad, blocklist.
   getProfile: () =>
     api.get<UserProfile>('/user/profile').then(res => res.data),
+
+  /**
+   * Website visit rows for the logged-in kid — reads `visitedWebsites` from the user document
+   * via `/user/profile` (including nested shapes), then tries dedicated routes if the array is missing.
+   */
+  getDashboardVisitedWebsites: async (): Promise<unknown[]> => {
+    try {
+      const raw = await api.get<Record<string, unknown>>('/user/profile').then((res) => res.data);
+      const fromProfile = extractVisitedWebsitesFromUserDoc(raw);
+      if (fromProfile.length > 0) return fromProfile;
+    } catch {
+      /* continue to fallbacks */
+    }
+    for (const path of ['/user/visited-websites', '/user/visitedWebsites']) {
+      try {
+        const data = await api.get<unknown>(path).then((res) => res.data);
+        const arr = normalizeVisitedWebsitesPayload(data);
+        if (arr.length > 0) return arr;
+      } catch {
+        /* try next path */
+      }
+    }
+    return [];
+  },
 
   // Numerical stats payload used for dashboard metrics.
   getStats: () =>

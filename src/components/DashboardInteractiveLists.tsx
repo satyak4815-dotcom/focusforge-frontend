@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown, Loader2, Plus } from 'lucide-react';
-import { sessions, Session } from '../services/api';
+import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { sessions, Session, user } from '../services/api';
 import { useAppContext } from '../AppContext';
 import RobotMascot from './RobotMascot';
 import MascotMessage from './MascotMessage';
@@ -33,6 +34,101 @@ function sessionDuration(start: string, end?: string) {
   return `${mins} min`;
 }
 
+/** Slice colors for the Analysis pie — Retro-Modern Flat Pop palette. */
+const PIE_SLICE_COLORS = [
+  '#2FB1A2',
+  '#F4C92E',
+  '#b84a3d',
+  '#7ec8ea',
+  '#c8ebe4',
+  '#4B2927',
+  '#9fe8ff',
+] as const;
+
+/**
+ * DATA PROCESSING (pie chart): takes the raw visited-websites array from the user profile,
+ * groups by normalized domain (same rules as parent activity), sorts by visit count descending,
+ * keeps the top 5 sites, and rolls remaining traffic into a single "Other" bucket.
+ */
+function processWebsiteVisitsForPieChart(raw: unknown[]): { name: string; count: number }[] {
+  if (!Array.isArray(raw) || raw.length === 0) return [];
+
+  const grouped = new Map<string, { name: string; count: number }>();
+
+  const ensureGroup = (url: string) => {
+    const normalized = String(url || '').trim().toLowerCase();
+    if (!normalized) return null;
+    if (!grouped.has(normalized)) {
+      grouped.set(normalized, { name: normalized, count: 0 });
+    }
+    return grouped.get(normalized)!;
+  };
+
+  raw.forEach((entry: unknown) => {
+    if (typeof entry === 'string') {
+      const g = ensureGroup(entry);
+      if (g) g.count += 1;
+      return;
+    }
+    if (!entry || typeof entry !== 'object') return;
+    const o = entry as Record<string, unknown>;
+    const siteKey =
+      o.url ?? o.domain ?? o.website ?? o.site ?? o.hostname ?? o.host ?? o.name ?? o.title;
+    const g = ensureGroup(String(siteKey ?? ''));
+    if (!g) return;
+
+    const times = Array.isArray(o.accessTimes)
+      ? (o.accessTimes as unknown[]).filter(Boolean)
+      : [o.timestamp, o.visitedAt, o.createdAt].filter(Boolean);
+    const nCount = Number(o.count);
+    const nVisitCount = Number(o.visitCount);
+    const safeCount = Number.isFinite(nCount) && nCount > 0 ? Math.floor(nCount) : 0;
+    const safeVisitCount = Number.isFinite(nVisitCount) && nVisitCount > 0 ? Math.floor(nVisitCount) : 0;
+
+    if (safeCount > 0) {
+      g.count += safeCount;
+    } else if (safeVisitCount > 0) {
+      g.count += safeVisitCount;
+    } else if (times.length > 0) {
+      g.count += times.length;
+    } else {
+      g.count += 1;
+    }
+  });
+
+  const rows = Array.from(grouped.values())
+    .map((r) => ({ name: r.name, count: Math.max(0, Math.round(Number(r.count)) || 0) }))
+    .filter((r) => r.count > 0);
+  rows.sort((a, b) => b.count - a.count);
+
+  const top = rows.slice(0, 5);
+  const rest = rows.slice(5);
+  if (rest.length === 0) return top;
+
+  const sumOther = rest.reduce((acc, r) => acc + r.count, 0);
+  if (sumOther <= 0) return top;
+  return [...top, { name: 'Other', count: sumOther }];
+}
+
+function AnalysisTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: ReadonlyArray<{ name?: string; value?: number }>;
+}) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0];
+  const label = row?.name ?? '';
+  const value = row?.value ?? 0;
+  return (
+    <div className="rounded-2xl border-2 border-pop-maroon bg-pop-white px-3 py-2 shadow-pop">
+      <p className="font-display text-[11px] font-bold uppercase tracking-wide text-pop-maroon">{label}</p>
+      <p className="font-sans text-sm font-semibold text-pop-maroon">{value} visits</p>
+    </div>
+  );
+}
+
 export default function DashboardInteractiveLists({
   showHistory,
   showBlocklist,
@@ -47,6 +143,10 @@ export default function DashboardInteractiveLists({
     useAppContext();
   const [newDomain, setNewDomain] = useState('');
   const [addingSite, setAddingSite] = useState(false);
+
+  const [pieData, setPieData] = useState<{ name: string; count: number }[]>([]);
+  const [analysisLoading, setAnalysisLoading] = useState(true);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   /** Robot face: happy while XP is rising (and briefly after), sad when flat. */
   const [xpBoostMood, setXpBoostMood] = useState(false);
@@ -104,6 +204,28 @@ export default function DashboardInteractiveLists({
     };
   }, []);
 
+  useEffect(() => {
+    let mounted = true;
+    const loadAnalysis = async () => {
+      try {
+        const arr = await user.getDashboardVisitedWebsites();
+        if (!mounted) return;
+        setPieData(processWebsiteVisitsForPieChart(arr));
+        setAnalysisError(null);
+      } catch {
+        if (mounted) setAnalysisError('Could not load analysis.');
+      } finally {
+        if (mounted) setAnalysisLoading(false);
+      }
+    };
+    loadAnalysis();
+    const id = setInterval(loadAnalysis, 15000);
+    return () => {
+      mounted = false;
+      clearInterval(id);
+    };
+  }, []);
+
   const paletteBtn =
     'inline-flex flex-1 min-w-[min(100%,200px)] max-w-[min(100vw-2rem,320px)] cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-pop-maroon bg-pop-mustard px-5 py-3 font-display text-sm font-semibold uppercase tracking-tight text-pop-maroon shadow-pop transition-all duration-200 ease-in-out hover:-translate-y-0.5 hover:shadow-pop-md active:translate-y-0 sm:py-4';
 
@@ -124,9 +246,76 @@ export default function DashboardInteractiveLists({
 
   return (
     <section className="flex w-full flex-col items-center gap-6" aria-label="Session history and blocklist toggles">
-      <div className="flex w-full max-w-lg flex-col items-center gap-4 px-2">
-        <RobotMascot isFocusing={xpBoostMood} />
-        <MascotMessage isFocusing={isSessionActive} />
+      {/*
+        LAYOUT: two-column hero — mascot + message (left), Analysis pie (right) on md+.
+        Robot/Mascot props and mood logic are unchanged; only the surrounding flex container changed.
+      */}
+      <div className="flex w-full max-w-5xl flex-col items-center justify-center gap-12 px-2 md:flex-row md:items-center">
+        <div className="flex w-full min-w-0 flex-1 flex-col items-center gap-4 md:max-w-md md:items-start">
+          <RobotMascot isFocusing={xpBoostMood} />
+          <MascotMessage isFocusing={isSessionActive} />
+        </div>
+
+        <div
+          className="flex w-full min-w-0 flex-1 flex-col items-center gap-4 md:max-w-md md:items-stretch"
+          aria-label="Website visit analysis"
+        >
+          <h2 className="w-full text-center font-display text-xs font-bold uppercase tracking-[0.2em] text-[#4B2927] md:text-left">
+            ANALYSIS
+          </h2>
+          <div className="relative w-full min-h-[300px] max-w-sm rounded-3xl border-2 border-pop-maroon bg-pop-white px-2 py-4 shadow-pop sm:mx-0 md:max-w-none">
+            {analysisLoading ? (
+              <div className="flex min-h-[300px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-pop-teal" aria-hidden />
+              </div>
+            ) : analysisError ? (
+              <p className="px-3 py-12 text-center font-sans text-sm font-semibold text-zen-terracotta">{analysisError}</p>
+            ) : pieData.length === 0 ? (
+              <p className="px-3 py-12 text-center font-display text-sm font-bold uppercase tracking-wide text-pop-maroon/70">
+                No site visits logged yet. Your chart will light up after browsing data syncs.
+              </p>
+            ) : (
+              <div className="h-[300px] w-full min-w-0">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
+                <PieChart margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
+                  <Pie
+                    data={pieData}
+                    dataKey="count"
+                    nameKey="name"
+                    cx="50%"
+                    cy="46%"
+                    innerRadius={0}
+                    outerRadius={78}
+                    paddingAngle={2}
+                    stroke="#4B2927"
+                    strokeWidth={2}
+                    isAnimationActive={false}
+                  >
+                    {pieData.map((_, index) => (
+                      <Cell key={`slice-${pieData[index]?.name}-${index}`} fill={PIE_SLICE_COLORS[index % PIE_SLICE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip content={AnalysisTooltip} />
+                  <Legend
+                    verticalAlign="bottom"
+                    align="center"
+                    layout="horizontal"
+                    wrapperStyle={{ fontFamily: 'Oswald, Impact, Arial Narrow, sans-serif', paddingTop: 8 }}
+                    formatter={(value, entry) => {
+                      const count = (entry as { payload?: { count?: number } })?.payload?.count;
+                      return (
+                        <span className="text-[10px] font-bold uppercase text-pop-maroon">
+                          {value} ({typeof count === 'number' ? count : '—'})
+                        </span>
+                      );
+                    }}
+                  />
+                </PieChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="flex w-full flex-wrap justify-center gap-4 px-1">
