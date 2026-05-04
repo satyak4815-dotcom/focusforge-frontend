@@ -11,20 +11,23 @@ export default function Leaderboard() {
   const [isFetchingLeaderboard, setIsFetchingLeaderboard] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchLeaderboard = useCallback(async (silent = false) => {
-    if (!squadId) return;
-    if (!silent) setIsFetchingLeaderboard(true);
-    try {
-      const res = await squads.getLeaderboard(squadId);
-      setLeaderboard(res.leaderboard);
-      setError(null);
-    } catch (err) {
-      console.error('Failed to fetch leaderboard:', err);
-      setError('Squad not found or session expired.');
-    } finally {
-      if (!silent) setIsFetchingLeaderboard(false);
-    }
-  }, [squadId]);
+  const fetchLeaderboard = useCallback(
+    async (silent = false) => {
+      if (!squadId) return;
+      if (!silent) setIsFetchingLeaderboard(true);
+      try {
+        const res = await squads.getLeaderboard(squadId);
+        setLeaderboard(res.leaderboard);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch leaderboard:', err);
+        setError('Squad not found or session expired.');
+      } finally {
+        if (!silent) setIsFetchingLeaderboard(false);
+      }
+    },
+    [squadId],
+  );
 
   useEffect(() => {
     fetchLeaderboard();
@@ -39,7 +42,7 @@ export default function Leaderboard() {
 
   if (isLoading && !squadId) {
     return (
-      <div className="flex-1 px-4 md:px-10 py-6 md:py-10 flex flex-col gap-10 max-w-5xl mx-auto w-full">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-6 md:px-10 md:py-10">
         <Skeleton height="200px" />
         <Skeleton height="400px" />
       </div>
@@ -48,15 +51,15 @@ export default function Leaderboard() {
 
   if (!squadId) {
     return (
-      <div className="flex-1 px-4 md:px-10 py-6 md:py-10 flex flex-col gap-10 max-w-5xl mx-auto w-full">
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase">
-          Live <span className="text-violet-500">Leaderboard</span>
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-6 md:px-10 md:py-10">
+        <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-pop-maroon md:text-5xl">
+          Live <span className="text-pop-teal">Leaderboard</span>
         </h2>
-        <div className="brutalist-card bg-white p-12 text-center flex flex-col items-center gap-6">
-          <Trophy className="w-16 h-16 text-slate-300" />
-          <h3 className="text-3xl font-black uppercase">No Active Squad</h3>
-          <p className="font-bold text-slate-500 uppercase text-sm max-w-md">
-            You are not part of any squad. Visit the <span className="text-pink-500">Squad Sync</span> tab to create or join one.
+        <div className="brutalist-card flex flex-col items-center gap-6 bg-pop-mustard/30 p-10 text-center md:p-12">
+          <Trophy className="h-16 w-16 text-pop-maroon/35" />
+          <h3 className="font-display text-3xl font-bold uppercase text-pop-maroon">No active squad</h3>
+          <p className="max-w-md font-sans text-sm font-semibold uppercase tracking-wide text-pop-maroon">
+            You are not part of any squad. Open Squad Sync to create or join one.
           </p>
         </div>
       </div>
@@ -64,115 +67,132 @@ export default function Leaderboard() {
   }
 
   return (
-    <div className="flex-1 px-4 md:px-10 py-6 md:py-10 flex flex-col gap-10 max-w-5xl mx-auto w-full">
-      <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase">
-          Live <span className="text-violet-500">Leaderboard</span>
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-6 md:px-10 md:py-10">
+      <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
+        <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-pop-maroon md:text-5xl">
+          Live <span className="text-pop-teal">Leaderboard</span>
         </h2>
-        <div className="bg-teal-400 border-2 border-[#111827] px-6 py-2 rounded-full shadow-[4px_4px_0px_#111827] font-black uppercase text-sm">
-          Live Sync Active
+        <div className="rounded-full border-2 border-pop-maroon bg-pop-teal px-6 py-2 font-display text-sm font-bold uppercase tracking-wide text-pop-white shadow-pop">
+          {isFetchingLeaderboard ? 'Syncing…' : 'Live sync active'}
         </div>
       </div>
 
       <div className="flex flex-col gap-8">
-        {/* SQUAD INFO BAR */}
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="brutalist-card bg-white flex-1 p-6 flex items-center justify-between">
+        <div className="flex flex-col gap-6 md:flex-row">
+          <div className="brutalist-card flex flex-1 items-center justify-between bg-pop-white p-6">
             <div>
-              <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Active Squad</p>
-              <h3 className="text-2xl font-black uppercase tracking-tighter">{squadInfo?.name || 'Loading...'}</h3>
+              <p className="mb-1 font-display text-[10px] font-bold uppercase tracking-widest text-pop-maroon/55">Active squad</p>
+              <h3 className="font-display text-2xl font-bold uppercase tracking-tight text-pop-maroon">
+                {squadInfo?.name || 'Loading...'}
+              </h3>
             </div>
-            <div className="w-12 h-12 bg-violet-100 border-2 border-[#111827] rounded-full flex items-center justify-center shadow-[3px_3px_0px_#111827]">
-              <Users className="w-6 h-6" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-mustard shadow-pop">
+              <Users className="h-6 w-6 text-pop-maroon" />
             </div>
           </div>
 
-          <div className="brutalist-card bg-yellow-300 p-6 flex items-center gap-6">
+          <div className="brutalist-card flex items-center gap-6 bg-pop-mustard/60 p-6">
             <div>
-              <p className="text-[10px] font-black uppercase text-black/40 mb-1">Infiltration Code</p>
+              <p className="mb-1 font-display text-[10px] font-bold uppercase tracking-widest text-pop-maroon/60">Join code</p>
               <div className="flex items-center gap-3">
-                <span className="text-3xl font-black tracking-[0.2em]">{squadInfo?.code || '-----'}</span>
-                <button 
+                <span className="font-display text-3xl font-bold tracking-[0.2em] text-pop-maroon">{squadInfo?.code || '-----'}</span>
+                <button
+                  type="button"
                   onClick={() => {
                     if (squadInfo?.code) {
                       navigator.clipboard.writeText(squadInfo.code);
                       alert('Squad code copied to clipboard!');
                     }
                   }}
-                  className="p-2 bg-black text-white rounded-lg hover:scale-110 transition-transform active:scale-95"
-                  title="Copy Code"
+                  className="rounded-full border-2 border-pop-maroon bg-pop-maroon p-2 text-pop-white shadow-pop transition-all duration-200 hover:-translate-y-0.5"
+                  title="Copy code"
                 >
-                  <Search className="w-4 h-4" /> 
+                  <Search className="h-4 w-4" />
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* LEADERBOARD TABLE */}
-        <div className="brutalist-card bg-white overflow-hidden">
-          <div className="bg-[#111827] p-6 flex items-center justify-between">
+        <div className="brutalist-card overflow-hidden bg-pop-white">
+          <div className="flex items-center justify-between border-b-4 border-pop-maroon bg-pop-maroon p-6">
             <div className="flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-yellow-400" />
-              <h3 className="text-white text-xl font-black uppercase tracking-widest">Squad Rankings</h3>
+              <Trophy className="h-6 w-6 text-pop-mustard" />
+              <h3 className="font-display text-xl font-bold uppercase tracking-widest text-pop-white">Squad rankings</h3>
             </div>
-            <span className="text-white/40 font-black text-[10px] uppercase tracking-widest">
-              Auto-Refreshing every 5s
+            <span className="font-display text-[10px] font-bold uppercase tracking-widest text-pop-white/70">
+              Auto-refresh · 5s
             </span>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b-4 border-[#111827] bg-slate-50">
-                  <th className="p-6 text-left font-black uppercase text-xs tracking-widest text-slate-500">Rank</th>
-                  <th className="p-6 text-left font-black uppercase text-xs tracking-widest text-slate-500">Warrior</th>
-                  <th className="p-6 text-center font-black uppercase text-xs tracking-widest text-slate-500">Focus XP</th>
-                  <th className="p-6 text-center font-black uppercase text-xs tracking-widest text-slate-500">Total Focus</th>
-                  <th className="p-6 text-right font-black uppercase text-xs tracking-widest text-slate-500">Status</th>
+                <tr className="border-b-2 border-pop-maroon bg-pop-mustard/50">
+                  <th className="p-4 text-left font-display text-xs font-bold uppercase tracking-widest text-pop-maroon/75 md:p-6">
+                    Rank
+                  </th>
+                  <th className="p-4 text-left font-display text-xs font-bold uppercase tracking-widest text-pop-maroon/75 md:p-6">
+                    Warrior
+                  </th>
+                  <th className="p-4 text-center font-display text-xs font-bold uppercase tracking-widest text-pop-maroon/75 md:p-6">
+                    Focus XP
+                  </th>
+                  <th className="p-4 text-center font-display text-xs font-bold uppercase tracking-widest text-pop-maroon/75 md:p-6">
+                    Total focus
+                  </th>
+                  <th className="p-4 text-right font-display text-xs font-bold uppercase tracking-widest text-pop-maroon/75 md:p-6">
+                    Status
+                  </th>
                 </tr>
               </thead>
-              <tbody className="divide-y-2 divide-slate-100">
+              <tbody className="divide-y divide-pop-maroon/15">
                 {leaderboard.map((member, index) => {
                   const isTop = index === 0;
                   return (
-                    <tr 
+                    <tr
                       key={member.memberId}
-                      className={`transition-colors hover:bg-slate-50 ${isTop ? 'bg-yellow-50/50' : ''}`}
+                      className={`transition-colors duration-200 hover:bg-pop-mustard/25 ${isTop ? 'bg-pop-teal/10' : ''}`}
                     >
-                      <td className="p-6">
-                        <div className="flex items-center justify-center w-10 h-10 bg-white border-2 border-[#111827] rounded-lg font-black shadow-[2px_2px_0px_#111827]">
+                      <td className="p-4 md:p-6">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-pop-maroon bg-pop-white font-display font-bold text-pop-maroon shadow-pop">
                           {index + 1}
                         </div>
                       </td>
-                      <td className="p-6">
+                      <td className="p-4 md:p-6">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-full border-2 border-[#111827] flex items-center justify-center font-black text-lg shadow-[3px_3px_0px_#111827] ${isTop ? 'bg-yellow-300' : 'bg-slate-200'}`}>
-                            {isTop ? <Crown className="w-6 h-6" /> : member.username[0].toUpperCase()}
+                          <div
+                            className={`flex h-12 w-12 items-center justify-center rounded-full border-2 border-pop-maroon font-display text-lg font-bold text-pop-maroon shadow-pop ${
+                              isTop ? 'bg-pop-mustard' : 'bg-pop-cream'
+                            }`}
+                          >
+                            {isTop ? <Crown className="h-6 w-6" /> : member.username[0].toUpperCase()}
                           </div>
-                          <span className="font-black text-lg uppercase">{member.username}</span>
+                          <span className="font-display text-lg font-bold uppercase text-pop-maroon">{member.username}</span>
                         </div>
                       </td>
-                      <td className="p-6 text-center">
-                        <div className="inline-flex items-center gap-2 bg-yellow-100 px-4 py-2 border-2 border-[#111827] rounded-xl">
-                          <Zap className="w-4 h-4 text-yellow-600 fill-yellow-600" />
-                          <span className="font-black text-xl">{Math.floor(member.focusXP).toLocaleString()}</span>
+                      <td className="p-4 text-center md:p-6">
+                        <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-pop-maroon bg-pop-mustard/40 px-4 py-2 shadow-pop">
+                          <Zap className="h-4 w-4 fill-pop-maroon text-pop-maroon" />
+                          <span className="font-display text-xl font-bold text-pop-maroon">
+                            {Math.floor(member.focusXP).toLocaleString()}
+                          </span>
                         </div>
                       </td>
-                      <td className="p-6 text-center">
-                        <div className="inline-flex items-center gap-2 bg-blue-100 px-4 py-2 border-2 border-[#111827] rounded-xl">
-                          <Timer className="w-4 h-4 text-blue-600" />
-                          <span className="font-black text-xl">{member.totalFocusMinutes}m</span>
+                      <td className="p-4 text-center md:p-6">
+                        <div className="inline-flex items-center gap-2 rounded-2xl border-2 border-pop-maroon bg-pop-teal/25 px-4 py-2 shadow-pop">
+                          <Timer className="h-4 w-4 text-pop-maroon" />
+                          <span className="font-display text-xl font-bold text-pop-maroon">{member.totalFocusMinutes}m</span>
                         </div>
                       </td>
-                      <td className="p-6 text-right">
+                      <td className="p-4 text-right md:p-6">
                         {member.isLive ? (
-                          <span className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full border-2 border-green-700 font-black text-xs uppercase tracking-widest animate-pulse">
-                            <div className="w-2 h-2 rounded-full bg-green-700" />
-                            Live Now
+                          <span className="inline-flex items-center gap-2 rounded-full border-2 border-pop-maroon bg-pop-teal px-3 py-2 font-display text-[10px] font-bold uppercase tracking-widest text-pop-white animate-pulse">
+                            <span className="h-2 w-2 rounded-full bg-pop-white" />
+                            Live now
                           </span>
                         ) : (
-                          <span className="text-slate-400 font-black text-[10px] uppercase tracking-widest">
+                          <span className="font-display text-[10px] font-bold uppercase tracking-widest text-pop-maroon/45">
                             Resting
                           </span>
                         )}
@@ -187,11 +207,11 @@ export default function Leaderboard() {
       </div>
 
       {error && (
-        <div className="brutalist-card bg-red-100 border-red-500 p-4 flex items-center gap-3">
-          <div className="bg-red-500 text-white p-1 rounded-full">
-            <Search className="w-4 h-4" />
+        <div className="brutalist-card flex items-center gap-3 border-2 border-pop-maroon bg-pop-mustard/40 p-4">
+          <div className="rounded-full border-2 border-pop-maroon bg-zen-terracotta p-1 text-pop-white">
+            <Search className="h-4 w-4" />
           </div>
-          <p className="text-red-700 font-bold uppercase text-xs">{error}</p>
+          <p className="font-display text-xs font-bold uppercase text-pop-maroon">{error}</p>
         </div>
       )}
     </div>

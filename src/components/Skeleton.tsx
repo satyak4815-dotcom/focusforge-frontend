@@ -9,8 +9,8 @@ interface SkeletonProps {
 
 export default function Skeleton({ width = '100%', height = '24px', className = '', pill = false }: SkeletonProps) {
   return (
-    <div 
-      className={`animate-pulse bg-gray-300 border-[2px] border-[#111827] shadow-[2px_2px_0px_#111827] ${pill ? 'rounded-full' : 'rounded-xl'} ${className}`}
+    <div
+      className={`animate-pulse rounded-xl border-2 border-pop-maroon bg-pop-teal/20 shadow-pop ${pill ? 'rounded-full' : ''} ${className}`}
       style={{ width, height }}
     />
   );

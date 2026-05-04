@@ -9,7 +9,7 @@ export default function SessionHistory() {
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchHistory = async () => {
       try {
         const res = await sessions.getHistory();
@@ -17,7 +17,7 @@ export default function SessionHistory() {
           setHistory(res.sessions || []);
           setError(null);
         }
-      } catch (err: any) {
+      } catch {
         if (isMounted) {
           setError('Failed to load session history.');
         }
@@ -30,11 +30,10 @@ export default function SessionHistory() {
 
     fetchHistory();
 
-    // Set up polling every 5 seconds
     const intervalId = setInterval(fetchHistory, 5000);
 
-    return () => { 
-      isMounted = false; 
+    return () => {
+      isMounted = false;
       clearInterval(intervalId);
     };
   }, []);
@@ -58,56 +57,69 @@ export default function SessionHistory() {
   };
 
   return (
-    <div className="brutalist-card bg-white p-6 w-full flex flex-col mt-6">
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b-2 border-[#111827]">
-        <div className="w-10 h-10 bg-violet-300 border-[2px] border-[#111827] rounded-full flex items-center justify-center shadow-[2px_2px_0px_#111827]">
-          <History className="w-5 h-5 text-[#111827]" />
+    <div className="brutalist-card mt-6 flex w-full flex-col bg-pop-cream p-6">
+      <div className="mb-6 flex items-center gap-3 border-b-2 border-pop-maroon pb-4">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-teal/30 shadow-pop">
+          <History className="h-5 w-5 text-pop-maroon" />
         </div>
-        <h2 className="text-2xl font-black text-[#111827] uppercase tracking-tighter">Session History</h2>
+        <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-pop-maroon">Session history</h2>
       </div>
 
       {isLoading ? (
         <div className="flex justify-center p-8">
-          <Loader2 className="w-8 h-8 animate-spin text-[#111827]" />
+          <Loader2 className="h-8 w-8 animate-spin text-pop-teal" />
         </div>
       ) : error ? (
-        <div className="bg-red-100 border-[2px] border-[#111827] p-4 text-center font-bold text-red-700">
+        <div className="rounded-2xl border-2 border-pop-maroon bg-zen-terracotta/20 p-4 text-center font-sans font-semibold text-pop-maroon">
           {error}
         </div>
       ) : history.length === 0 ? (
-        <div className="text-center p-8 font-bold text-slate-500 uppercase">
-          No sessions recorded yet. Start focusing!
-        </div>
+        <div className="p-8 text-center font-display font-bold uppercase text-pop-maroon/60">No sessions recorded yet. Start focusing.</div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-[#FCD34D] border-[2px] border-[#111827]">
-                <th className="p-3 text-left font-black uppercase text-sm border-r-[2px] border-[#111827]">Date</th>
-                <th className="p-3 text-left font-black uppercase text-sm border-r-[2px] border-[#111827]">Duration</th>
-                <th className="p-3 text-left font-black uppercase text-sm border-r-[2px] border-[#111827]">XP</th>
-                <th className="p-3 text-left font-black uppercase text-sm">Status</th>
+              <tr className="border-2 border-pop-maroon bg-pop-mustard/50">
+                <th className="border-r-2 border-pop-maroon p-3 text-left font-display text-sm font-bold uppercase text-pop-maroon">
+                  Date
+                </th>
+                <th className="border-r-2 border-pop-maroon p-3 text-left font-display text-sm font-bold uppercase text-pop-maroon">
+                  Duration
+                </th>
+                <th className="border-r-2 border-pop-maroon p-3 text-left font-display text-sm font-bold uppercase text-pop-maroon">XP</th>
+                <th className="p-3 text-left font-display text-sm font-bold uppercase text-pop-maroon">Status</th>
               </tr>
             </thead>
             <tbody>
               {history.map((session) => (
-                <tr key={session._id} className="border-x-[2px] border-b-[2px] border-[#111827] hover:bg-slate-50 transition-colors">
-                  <td className="p-3 font-bold text-sm border-r-[2px] border-[#111827]">
+                <tr
+                  key={session._id}
+                  className="border-x-2 border-b-2 border-pop-maroon transition-colors hover:bg-pop-mustard/30"
+                >
+                  <td className="border-r-2 border-pop-maroon p-3 font-sans text-sm font-semibold text-pop-maroon">
                     {formatDate(session.startTime)}
                   </td>
-                  <td className="p-3 font-bold text-sm border-r-[2px] border-[#111827]">
+                  <td className="border-r-2 border-pop-maroon p-3 font-sans text-sm font-semibold text-pop-maroon">
                     {calculateDuration(session.startTime, session.endTime)}
                   </td>
-                  <td className={`p-3 font-black text-sm border-r-[2px] border-[#111827] ${session.xpYield > 0 ? 'text-green-600' : 'text-slate-400'}`}>
+                  <td
+                    className={`border-r-2 border-pop-maroon p-3 font-display text-sm font-bold ${
+                      session.xpYield > 0 ? 'text-pop-teal' : 'text-pop-maroon/45'
+                    }`}
+                  >
                     {session.xpYield > 0 ? `+${session.xpYield}` : '0'}
                   </td>
-                  <td className="p-3 font-bold text-sm flex items-center gap-2 uppercase">
+                  <td className="flex items-center gap-2 p-3 font-display text-sm font-bold uppercase text-pop-maroon">
                     {session.status === 'completed' ? (
-                      <><CheckCircle2 className="w-4 h-4 text-green-500" /> Success</>
+                      <>
+                        <CheckCircle2 className="h-4 w-4 text-pop-teal" /> Success
+                      </>
                     ) : session.status === 'failed' ? (
-                      <><XCircle className="w-4 h-4 text-red-500" /> Failed</>
+                      <>
+                        <XCircle className="h-4 w-4 text-zen-terracotta" /> Failed
+                      </>
                     ) : (
-                      <span className="text-blue-500">Active</span>
+                      <span className="text-pop-teal">Active</span>
                     )}
                   </td>
                 </tr>

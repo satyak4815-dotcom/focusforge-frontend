@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { API_BASE_URL as BASE_URL } from '../config';
 
 // --- INTERFACES ---
@@ -57,154 +58,148 @@ export interface SquadMemberStat {
   totalFocusMinutes: number;
 }
 
-// --- HELPER FUNCTION ---
+// --- AXIOS CONFIGURATION ---
+// Single axios instance used by all feature modules.
+// Keeps base URL, auth token handling, and error behavior centralized.
 
-async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const token = localStorage.getItem('focusforge_token');
-  
-  const headers: HeadersInit = {
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
     'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  },
+});
 
+api.interceptors.request.use((config) => {
+  // Attach JWT from localStorage on every request so protected routes work.
+  const token = localStorage.getItem('focusforge_token');
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    config.headers['Authorization'] = `Bearer ${token}`;
   }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
 
-  const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (response.status === 401 || response.status === 403) {
+api.interceptors.response.use((response) => response, (error) => {
+  // When token is invalid/expired, emit a global event so AppContext can logout.
+  if (error.response && (error.response.status === 401 || error.response.status === 403)) {
     window.dispatchEvent(new Event('focusforge_unauthorized'));
-    throw new Error('Session expired. Please log in again.');
+    return Promise.reject(new Error('Session expired. Please log in again.'));
   }
 
-  if (!response.ok) {
-    let errorMessage = `API Error: ${response.status} ${response.statusText}`;
-    try {
-      const errorData = await response.json();
-      if (errorData.message) {
-        errorMessage = errorData.message;
-      }
-    } catch (e) {
-      // Ignore JSON parse errors if response is not JSON
-    }
-    throw new Error(errorMessage);
-  }
-
-  if (response.status === 204) {
-    return {} as T;
-  }
-
-  return response.json();
-}
+  // Normalize backend/network errors into readable messages for UI to display.
+  let errorMessage = error.response?.data?.message || error.message || 'An unknown error occurred';
+  return Promise.reject(new Error(errorMessage));
+});
 
 // --- API SERVICES ---
 
 export const auth = {
-  register: (username: string, email: string, password: string) => 
-    apiFetch<AuthResponse>('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ username, email, password }),
-    }),
-    
-  login: (identifier: string, password: string) => 
-    apiFetch<AuthResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ identifier, password }),
-    }),
+  // Kid account signup.
+  register: (username: string, email: string, password: string) =>
+    api.post<AuthResponse>('/auth/register', { username, email, password }).then(res => res.data),
+
+  // Shared login route used by both kid and parent.
+  login: (identifier: string, password: string) =>
+    api.post<AuthResponse>('/auth/login', { identifier, password }).then(res => res.data),
+
+  // Parent-specific signup route.
+  registerParent: (username: string, email: string, password: string) =>
+    api.post<AuthResponse>('/parents/register', { username, email, password })
+      .then(res => res.data)
+      .catch(err => {
+        throw new Error(err.message || 'Parent registration failed. Please try again.');
+      }),
+};
+
+export const parents = {
+  // Link an existing kid user to the current parent account.
+  linkChild: (username: string) =>
+    api.post('/parents/link-child', { username }).then(res => res.data),
+
+  // Fetch children linked to the logged-in parent for dashboard rendering.
+  getLinkedChildren: () =>
+    api.get<any[]>('/parents/linked-children')
+      .then(res => res.data)
+      .catch((err: Error) => {
+        // If route is unavailable in older backend versions, return empty list
+        // so parent dashboard can render without a hard crash.
+        if (err.message.includes('404')) return [];
+        throw err;
+      }),
+
+  // Compatibility endpoint for child web activity on older backend designs.
+  getChildActivity: (kidId: string) =>
+    api.get(`/parents/child-activity?kidId=${kidId}`).then(res => res.data),
 };
 
 export const user = {
-  getProfile: () => 
-    apiFetch<UserProfile>('/user/profile', {
-      method: 'GET',
-    }),
-    
-  getStats: () => 
-    apiFetch<UserStats>('/user/stats', {
-      method: 'GET',
-    }),
-    
-  addXP: (amount: number) => 
-    apiFetch<{ success: boolean; newXP: number }>('/user/add-xp', {
-      method: 'POST',
-      body: JSON.stringify({ amount }),
-    }),
+  // Main kid profile payload used for username, XP, level, squad, blocklist.
+  getProfile: () =>
+    api.get<UserProfile>('/user/profile').then(res => res.data),
+
+  // Numerical stats payload used for dashboard metrics.
+  getStats: () =>
+    api.get<UserStats>('/user/stats').then(res => res.data),
+
+  // Increment XP (used by periodic sync while session is active).
+  addXP: (xpDelta: number) =>
+    api.post<{ message: string; currentXP: number; level: number; xpToNextLevel: number }>('/user/add-xp', { xpDelta }).then(res => res.data),
 };
 
 export interface SessionEndResponse {
-  xpEarned: number;
-  newTotalXP: number;
-  newLevel: number;
+  message: string;
+  focusXP: number;
+  level: number;
   currentStreak: number;
 }
 
 export const sessions = {
-  start: () => 
-    apiFetch<Session>('/sessions/start', {
-      method: 'POST',
-    }),
-    
-  end: (sessionId: string) => 
-    apiFetch<SessionEndResponse>(`/sessions/${sessionId}/end`, {
-      method: 'PATCH',
-    }),
-    
-  fail: (sessionId: string) => 
-    apiFetch<{ message: string; xpReverted: number }>(`/sessions/${sessionId}/fail`, {
-      method: 'PATCH',
-    }),
-    
-  getHistory: () => 
-    apiFetch<SessionHistoryResponse>('/sessions/history', {
-      method: 'GET',
-    }),
+  // Start a focus session and receive session metadata.
+  start: (domain?: string, durationMins?: number, hardMode?: boolean) =>
+    api.post<Session>('/sessions/start', { domain, durationMins, hardMode }).then(res => res.data),
+
+  // Complete a session and return updated progress values.
+  end: (sessionId: string) =>
+    api.patch<SessionEndResponse>(`/sessions/${sessionId}/end`).then(res => res.data),
+
+  // Mark session as failed (distraction/exit in hard mode).
+  fail: (sessionId: string) =>
+    api.patch<{ message: string; xpReverted: number }>(`/sessions/${sessionId}/fail`).then(res => res.data),
+
+  // Load historical sessions for reports/timelines.
+  getHistory: () =>
+    api.get<SessionHistoryResponse>('/sessions/history').then(res => res.data),
 };
 
 export const squads = {
-  create: (name: string) => 
-    apiFetch<Squad>('/squads/create', {
-      method: 'POST',
-      body: JSON.stringify({ name }),
-    }),
-    
-  join: (joinCode: string) => 
-    apiFetch<Squad>(`/squads/join`, {
-      method: 'POST',
-      body: JSON.stringify({ joinCode }),
-    }),
-    
-  getLeaderboard: (squadId: string) => 
-    apiFetch<{ leaderboard: SquadMemberStat[]; squadName: string; joinCode: string }>(`/squads/${squadId}/leaderboard`, {
-      method: 'GET',
-    }),
-    
-  updateLiveStatus: (isLive: boolean) => 
-    apiFetch<{ success: boolean }>(`/squads/live-status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ isLive }),
-    }),
+  // Create a new squad owned by current user.
+  create: (name: string) =>
+    api.post<Squad>('/squads/create', { name }).then(res => res.data),
+
+  // Join an existing squad using invite/join code.
+  join: (joinCode: string) =>
+    api.post<Squad>(`/squads/join`, { joinCode }).then(res => res.data),
+
+  // Get leaderboard and squad identity details.
+  getLeaderboard: (squadId: string) =>
+    api.get<{ leaderboard: SquadMemberStat[]; squadName: string; joinCode: string }>(`/squads/${squadId}/leaderboard`).then(res => res.data),
+
+  // Broadcast whether the user is actively focusing.
+  updateLiveStatus: (isLive: boolean) =>
+    api.patch<{ success: boolean }>(`/squads/live-status`, { isLive }).then(res => res.data),
 };
 
 export const blocklist = {
-  get: () => 
-    apiFetch<{ blockedSites: string[] }>('/blocklist', {
-      method: 'GET',
-    }),
-    
-  add: (domain: string) => 
-    apiFetch<{ message: string; blockedSites: string[] }>('/blocklist/add', {
-      method: 'POST',
-      body: JSON.stringify({ domain }),
-    }),
-    
-  remove: (domain: string) => 
-    apiFetch<{ message: string; blockedSites: string[] }>('/blocklist/remove', {
-      method: 'DELETE',
-      body: JSON.stringify({ domain }),
-    }),
-};
+  // Fetch current blocked domains for active user.
+  get: () =>
+    api.get<{ blockedSites: string[] }>('/blocklist').then(res => res.data),
 
+  // Add a domain to backend blocklist.
+  add: (domain: string) =>
+    api.post<{ message: string; blockedSites: string[] }>('/blocklist/add', { domain }).then(res => res.data),
+
+  // Remove a domain from backend blocklist.
+  remove: (domain: string) =>
+    api.request<{ message: string; blockedSites: string[] }>({ url: '/blocklist/remove', method: 'DELETE', data: { domain } }).then(res => res.data),
+};

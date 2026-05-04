@@ -23,72 +23,73 @@ export default function BlockedSitesList() {
   };
 
   return (
-    <div className="brutalist-card bg-white p-6 w-full h-full flex flex-col gap-6">
-      <div className="flex items-center justify-between border-b-2 border-[#111827] pb-4">
+    <div className="brutalist-card flex h-full w-full flex-col gap-6 bg-pop-white p-6">
+      <div className="flex items-center justify-between border-b-2 border-pop-maroon pb-4">
         <div className="flex items-center gap-3">
-          <div className="bg-rose-100 p-2 border-2 border-[#111827] rounded-xl shadow-[2px_2px_0px_#111827]">
-            <Lock className="w-5 h-5 text-rose-600" />
+          <div className="rounded-xl border-2 border-pop-maroon bg-pop-mustard/40 p-2 shadow-pop">
+            <Lock className="h-5 w-5 text-pop-maroon" />
           </div>
-          <h3 className="text-xl font-black uppercase tracking-tight text-[#111827]">Blocklist</h3>
+          <h3 className="font-display text-xl font-bold uppercase tracking-tight text-pop-maroon">Blocklist</h3>
         </div>
-        <span className="bg-teal-100 px-3 py-1 border-2 border-[#111827] rounded-full text-[10px] font-black uppercase tracking-widest shadow-[2px_2px_0px_#111827]">
-          {blockedSites.length} Domains
+        <span className="rounded-full border-2 border-pop-maroon bg-pop-teal/25 px-3 py-1 font-display text-[10px] font-bold uppercase tracking-widest text-pop-maroon shadow-pop">
+          {blockedSites.length} domains
         </span>
       </div>
 
-      {/* ADD SITE INPUT */}
       <form onSubmit={handleAdd} className="flex gap-3">
         <div className="relative flex-1">
-          <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Globe className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-pop-maroon/45" />
           <input
             type="text"
             value={newDomain}
             onChange={(e) => setNewDomain(e.target.value)}
             placeholder="example.com"
             disabled={isSubmitting}
-            className="w-full bg-slate-50 border-2 border-[#111827] rounded-xl py-3 pl-11 pr-4 font-bold text-sm focus:outline-none focus:bg-white transition-all shadow-[2px_2px_0px_#111827] focus:shadow-none focus:translate-x-[2px] focus:translate-y-[2px]"
+            className="input-pop w-full py-3 pl-11 pr-4 text-sm"
           />
         </div>
         <button
           type="submit"
           disabled={!newDomain.trim() || isSubmitting}
-          className="brutalist-button bg-teal-400 p-3 rounded-xl flex items-center justify-center disabled:opacity-50 disabled:grayscale"
+          className="brutalist-button flex items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-teal p-3 text-pop-white disabled:opacity-50"
+          aria-label="Add domain"
         >
-          <Plus className="w-6 h-6 text-black" />
+          <Plus className="h-6 w-6" />
         </button>
       </form>
 
-      {/* SITES LIST */}
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar flex flex-col gap-3 min-h-[200px] max-h-[350px]">
+      <div className="custom-scrollbar flex min-h-[200px] max-h-[350px] flex-1 flex-col gap-3 overflow-y-auto pr-2">
         {blockedSites.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full py-10 text-center opacity-40 grayscale">
-            <Shield className="w-12 h-12 mb-2" />
-            <p className="text-xs font-black uppercase tracking-widest">No sites blocked yet</p>
+          <div className="flex h-full flex-col items-center justify-center py-10 text-center opacity-50">
+            <Shield className="mb-2 h-12 w-12 text-pop-maroon" />
+            <p className="font-display text-xs font-bold uppercase tracking-widest text-pop-maroon">No sites blocked yet</p>
           </div>
         ) : (
           blockedSites.map((site) => (
             <div
               key={site}
-              className="group flex items-center justify-between p-4 bg-slate-50 border-2 border-[#111827] rounded-xl transition-all hover:bg-white shadow-[2px_2px_0px_rgba(0,0,0,0.1)] hover:shadow-[3px_3px_0px_#111827]"
+              className="group flex items-center justify-between rounded-2xl border-2 border-pop-maroon bg-pop-mustard/25 p-4 shadow-pop transition-all duration-200 hover:-translate-y-0.5 hover:bg-pop-cream hover:shadow-pop-md"
             >
               <div className="flex items-center gap-3 overflow-hidden">
-                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse shrink-0" />
-                <span className="font-bold text-sm truncate">{site}</span>
+                <div className="h-2 w-2 shrink-0 animate-pulse rounded-full bg-zen-terracotta" />
+                <span className="truncate font-sans text-sm font-semibold text-pop-maroon">{site}</span>
               </div>
               <button
+                type="button"
                 onClick={() => removeBlockedSite(site)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-rose-100 border-2 border-transparent hover:border-[#111827] rounded-lg transition-all"
+                className="rounded-lg border-2 border-transparent p-1.5 opacity-0 transition-all hover:border-pop-maroon hover:bg-zen-terracotta/15 group-hover:opacity-100"
+                aria-label={`Remove ${site}`}
               >
-                <X className="w-4 h-4 text-rose-600" />
+                <X className="h-4 w-4 text-zen-terracotta" />
               </button>
             </div>
           ))
         )}
       </div>
 
-      <div className="pt-4 border-t-2 border-[#111827] border-dashed">
-        <p className="text-[10px] font-bold text-slate-500 uppercase leading-tight italic">
-          * Sites added here will be automatically blocked by your FocusForge Extension.
+      <div className="border-t-2 border-dashed border-pop-maroon pt-4">
+        <p className="font-sans text-[10px] font-semibold uppercase leading-tight text-pop-maroon/65">
+          Sites added here are blocked by your FocusForge extension.
         </p>
       </div>
     </div>

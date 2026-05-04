@@ -58,167 +58,147 @@ export default function SquadSync() {
     }
   };
 
-  return (
-    <div className="flex-1 px-4 md:px-10 py-6 md:py-10 flex flex-col gap-10 max-w-5xl mx-auto w-full">
+  const disabledCard = squadId ? 'pointer-events-none opacity-60 grayscale' : '';
 
-      {/* ── PAGE HEADER ── */}
+  return (
+    <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-4 py-6 md:px-10 md:py-10">
       <div>
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tighter uppercase">
-          Squad <span className="text-pink-500">Sync</span>
+        <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-pop-maroon md:text-5xl">
+          Squad <span className="text-pop-teal">Sync</span>
         </h2>
-        <p className="mt-2 text-slate-500 font-bold uppercase text-xs tracking-widest">
-          Create or join a squad — then check the Leaderboard to track live rankings.
+        <p className="mt-2 font-sans text-xs font-semibold uppercase tracking-widest text-pop-maroon">
+          Create or join a squad, then open the leaderboard for live rankings.
         </p>
       </div>
 
-      {/* ── CREATE / JOIN CARDS ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-
-        {/* CREATE SQUAD */}
-        <div className={`brutalist-card bg-yellow-300 p-8 flex flex-col gap-6 transition-all duration-300 ${squadId ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+        <div className={`brutalist-card flex flex-col gap-6 bg-pop-mustard/50 p-8 transition-all duration-300 ${disabledCard}`}>
           <div className="flex items-center gap-4">
-            <div className="bg-white p-3 border-2 border-[#111827] rounded-2xl shadow-[4px_4px_0px_#111827]">
-              <Plus className="w-6 h-6 text-black" />
+            <div className="rounded-2xl border-2 border-pop-maroon bg-pop-white p-3 shadow-pop">
+              <Plus className="h-6 w-6 text-pop-maroon" />
             </div>
-            <h3 className="text-2xl font-black uppercase">Create Squad</h3>
+            <h3 className="font-display text-2xl font-bold uppercase text-pop-maroon">Create squad</h3>
           </div>
-          <p className="font-bold text-slate-700 uppercase text-xs tracking-wider leading-relaxed">
-            Form a new elite unit. You'll get a unique 5-digit code to share with friends.
+          <p className="font-sans text-xs font-semibold uppercase leading-relaxed tracking-wider text-pop-maroon">
+            Name your unit and receive a five-digit code to share with friends.
           </p>
           <form onSubmit={handleCreateSquad} className="flex flex-col gap-4">
             <input
               type="text"
               id="squad-name-input"
-              placeholder="E.G. ALPHA FOCUS"
+              placeholder="E.g. Alpha Focus"
               value={squadName}
               onChange={(e) => setSquadName(e.target.value)}
               disabled={!!squadId || isLoading}
-              className="w-full bg-white border-2 border-[#111827] px-5 py-4 font-black uppercase text-sm focus:outline-none shadow-[4px_4px_0px_#111827] focus:shadow-none focus:translate-x-1 focus:translate-y-1 transition-all placeholder:text-slate-400"
+              className="input-pop font-display text-sm font-bold uppercase placeholder:font-sans placeholder:normal-case"
             />
-            <button
-              type="submit"
-              disabled={isLoading || !!squadId}
-              className="brutalist-button bg-black text-white py-4 uppercase font-black tracking-widest hover:bg-slate-800 disabled:opacity-50"
-            >
-              {isLoading ? 'Establishing...' : 'Establish Squad'}
+            <button type="submit" disabled={isLoading || !!squadId} className="btn-pop-primary w-full py-4 disabled:opacity-50">
+              {isLoading ? 'Establishing…' : 'Establish squad'}
             </button>
           </form>
         </div>
 
-        {/* JOIN SQUAD */}
-        <div className={`brutalist-card bg-violet-300 p-8 flex flex-col gap-6 transition-all duration-300 ${squadId ? 'opacity-60 pointer-events-none grayscale' : ''}`}>
+        <div className={`brutalist-card flex flex-col gap-6 bg-pop-teal/25 p-8 transition-all duration-300 ${disabledCard}`}>
           <div className="flex items-center gap-4">
-            <div className="bg-white p-3 border-2 border-[#111827] rounded-2xl shadow-[4px_4px_0px_#111827]">
-              <UserPlus className="w-6 h-6 text-black" />
+            <div className="rounded-2xl border-2 border-pop-maroon bg-pop-white p-3 shadow-pop">
+              <UserPlus className="h-6 w-6 text-pop-maroon" />
             </div>
-            <h3 className="text-2xl font-black uppercase">Join Squad</h3>
+            <h3 className="font-display text-2xl font-bold uppercase text-pop-maroon">Join squad</h3>
           </div>
-          <p className="font-bold text-slate-700 uppercase text-xs tracking-wider leading-relaxed">
-            Enter the 5-digit code shared by your squad leader to join the fight.
+          <p className="font-sans text-xs font-semibold uppercase leading-relaxed tracking-wider text-pop-maroon">
+            Enter the code from your squad leader to join instantly.
           </p>
           <form onSubmit={handleJoinSquad} className="flex flex-col gap-4">
             <input
               type="text"
               id="join-code-input"
-              placeholder="5-DIGIT CODE"
+              placeholder="5-digit code"
               maxLength={5}
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
               disabled={!!squadId || isLoading}
-              className="w-full bg-white border-2 border-[#111827] px-5 py-4 font-black uppercase text-center text-2xl tracking-[0.5em] focus:outline-none shadow-[4px_4px_0px_#111827] focus:shadow-none focus:translate-x-1 focus:translate-y-1 transition-all placeholder:tracking-normal placeholder:text-base placeholder:text-slate-400"
+              className="input-pop text-center font-display text-2xl font-bold tracking-[0.45em] placeholder:tracking-normal placeholder:font-sans placeholder:text-base placeholder:font-semibold"
             />
             <button
               type="submit"
               disabled={isLoading || !!squadId || joinCode.trim().length !== 5}
-              className="brutalist-button bg-black text-white py-4 uppercase font-black tracking-widest hover:bg-slate-800 disabled:opacity-50"
+              className="btn-pop-primary w-full py-4 disabled:opacity-50"
             >
-              {isLoading ? 'Infiltrating...' : 'Infiltrate'}
+              {isLoading ? 'Joining…' : 'Join squad'}
             </button>
           </form>
         </div>
       </div>
 
-      {/* ── ERROR BANNER ── */}
       {error && (
-        <div className="bg-red-50 border-[3px] border-red-600 shadow-[4px_4px_0px_#dc2626] p-4 flex items-center gap-3 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          <p className="text-red-700 font-bold uppercase text-xs">{error}</p>
+        <div className="flex items-center gap-3 rounded-3xl border-2 border-pop-maroon bg-pop-mustard/40 p-4 shadow-pop">
+          <AlertCircle className="h-5 w-5 shrink-0 text-zen-terracotta" />
+          <p className="font-display text-xs font-bold uppercase text-pop-maroon">{error}</p>
           <button
+            type="button"
             onClick={() => setError(null)}
-            className="ml-auto text-red-400 hover:text-red-700 font-black text-lg leading-none"
+            className="ml-auto font-display text-lg font-bold leading-none text-pop-maroon/50 transition-colors hover:text-pop-maroon"
           >
             ×
           </button>
         </div>
       )}
 
-      {/* ── ACTIVE SQUAD DETAILS (appears below after creation/join) ── */}
       {squadInfo && (
         <div
           id="active-squad-card"
-          className="bg-white border-[3px] border-gray-900 shadow-[6px_6px_0px_#111827] rounded-2xl overflow-hidden"
+          className="overflow-hidden rounded-3xl border-2 border-pop-maroon bg-pop-white shadow-pop-md transition-all duration-200 hover:-translate-y-0.5 hover:shadow-pop-hover"
           style={{ animation: 'slideUp 0.3s ease-out' }}
         >
-          {/* Card Header */}
-          <div className="bg-[#111827] px-8 py-5 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Shield className="w-5 h-5 text-emerald-400" />
-              <span className="text-white font-black uppercase text-sm tracking-widest">Active Squad</span>
-              {/* Mint green pill badge */}
-              <span className="bg-emerald-400 text-[#111827] font-black uppercase text-[10px] tracking-widest px-3 py-1 rounded-full">
-                YOUR ACTIVE SQUAD
+          <div className="flex items-center justify-between border-b-4 border-pop-maroon bg-pop-maroon px-6 py-5 md:px-8">
+            <div className="flex flex-wrap items-center gap-3">
+              <Shield className="h-5 w-5 text-pop-mustard" />
+              <span className="font-display text-sm font-bold uppercase tracking-widest text-pop-white">Active squad</span>
+              <span className="rounded-full border-2 border-pop-white/40 bg-pop-teal px-3 py-1 font-display text-[10px] font-bold uppercase tracking-widest text-pop-white">
+                Your crew
               </span>
             </div>
             <button
+              type="button"
               onClick={handleLeave}
-              className="flex items-center gap-2 text-red-400 hover:text-red-300 font-black uppercase text-[10px] tracking-widest transition-colors"
+              className="flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-widest text-pop-mustard transition-opacity hover:opacity-90"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="h-4 w-4" />
               Leave
             </button>
           </div>
 
-          {/* Card Body */}
-          <div className="px-8 py-7 flex flex-col md:flex-row items-center gap-8">
-            {/* Squad Avatar */}
-            <div className="bg-emerald-100 border-[3px] border-[#111827] shadow-[4px_4px_0px_#111827] w-20 h-20 rounded-2xl flex items-center justify-center shrink-0">
-              <Users className="w-10 h-10 text-emerald-700" />
+          <div className="flex flex-col items-center gap-8 px-6 py-8 md:flex-row md:px-8 md:py-10">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl border-2 border-pop-maroon bg-pop-teal/30 shadow-pop">
+              <Users className="h-10 w-10 text-pop-maroon" />
             </div>
 
-            {/* Squad Name */}
             <div className="flex-1 text-center md:text-left">
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Squad Name</p>
-              <h3 className="text-3xl md:text-4xl font-black uppercase text-[#111827] leading-tight">
-                {squadInfo.name}
-              </h3>
-              <p className="mt-2 text-slate-500 font-bold uppercase text-xs tracking-wider">
-                Squad is active — share your code to bring in teammates.
+              <p className="mb-1 font-display text-[10px] font-bold uppercase tracking-widest text-pop-maroon/55">Squad name</p>
+              <h3 className="font-display text-3xl font-bold uppercase leading-tight text-pop-maroon md:text-4xl">{squadInfo.name}</h3>
+              <p className="mt-2 font-sans text-xs font-semibold uppercase tracking-wider text-pop-maroon">
+                Squad is live. Share your join code to recruit teammates.
               </p>
             </div>
 
-            {/* 5-Digit Code Block */}
-            <div className="shrink-0 flex flex-col items-center gap-3">
-              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">5-Digit Join Code</p>
-              <div className="bg-yellow-300 border-[3px] border-[#111827] shadow-[4px_4px_0px_#111827] px-6 py-4 rounded-xl flex items-center gap-4">
-                <span className="text-3xl font-black tracking-[0.5em] text-[#111827] font-mono">
-                  {squadInfo.code || '-----'}
-                </span>
+            <div className="flex shrink-0 flex-col items-center gap-3">
+              <p className="font-display text-[10px] font-bold uppercase tracking-widest text-pop-maroon/55">Join code</p>
+              <div className="flex items-center gap-4 rounded-2xl border-2 border-pop-maroon bg-pop-mustard px-5 py-4 shadow-pop">
+                <span className="font-mono text-3xl font-bold tracking-[0.5em] text-pop-maroon">{squadInfo.code || '-----'}</span>
                 <button
+                  type="button"
                   onClick={handleCopy}
                   title="Copy code"
-                  className={`p-2 border-2 border-[#111827] rounded-lg shadow-[2px_2px_0px_#111827] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none ${
-                    copied ? 'bg-emerald-400' : 'bg-white hover:bg-slate-100'
+                  className={`rounded-xl border-2 border-pop-maroon p-2 shadow-pop transition-all duration-200 hover:-translate-y-0.5 ${
+                    copied ? 'bg-pop-teal text-pop-white' : 'bg-pop-white text-pop-maroon'
                   }`}
                 >
-                  {copied
-                    ? <Check className="w-5 h-5 text-[#111827]" />
-                    : <Copy className="w-5 h-5 text-[#111827]" />
-                  }
+                  {copied ? <Check className="h-5 w-5" /> : <Copy className="h-5 w-5" />}
                 </button>
               </div>
               {copied && (
-                <p className="text-emerald-600 font-black uppercase text-[10px] tracking-widest animate-pulse">
-                  Copied to clipboard!
+                <p className="animate-pulse font-display text-[10px] font-bold uppercase tracking-widest text-pop-teal">
+                  Copied to clipboard
                 </p>
               )}
             </div>
@@ -228,8 +208,14 @@ export default function SquadSync() {
 
       <style>{`
         @keyframes slideUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>

@@ -2,13 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Timer, Play, Square, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useAppContext } from '../AppContext';
 
-const SESSION_DURATION_MS = 25 * 60 * 1000; // 25 minutes
+const SESSION_DURATION_MS = 25 * 60 * 1000;
 
 export default function FocusTimer() {
-  const { 
-    isSessionActive, sessionStartTime, 
-    startSession, endSession, failSession 
-  } = useAppContext();
+  const { isSessionActive, sessionStartTime, startSession, endSession, failSession } = useAppContext();
 
   const [timeLeftMs, setTimeLeftMs] = useState(SESSION_DURATION_MS);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -82,70 +79,71 @@ export default function FocusTimer() {
   };
 
   return (
-    <div className="brutalist-card bg-[#FCD34D] p-6 w-full flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="brutalist-card relative flex w-full flex-col items-center justify-center overflow-hidden bg-pop-mustard/50 p-6">
       {showCelebration && (
-        <div className="absolute inset-0 bg-green-400 z-10 flex flex-col items-center justify-center border-2 border-[#111827]">
-          <CheckCircle2 className="w-16 h-16 text-[#111827] mb-2 animate-bounce" />
-          <h2 className="text-3xl font-black text-[#111827] uppercase">Session Complete!</h2>
-          <p className="text-xl font-bold text-[#111827] mt-2">+25 XP Earned</p>
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center border-2 border-pop-maroon bg-pop-teal/95 p-6 text-pop-white">
+          <CheckCircle2 className="mb-2 h-16 w-16 animate-bounce text-pop-mustard" />
+          <h2 className="font-display text-3xl font-bold uppercase">Session complete</h2>
+          <p className="mt-2 font-sans text-xl font-semibold">+25 XP earned</p>
         </div>
       )}
 
       {showConfirm && (
-        <div className="absolute inset-0 bg-red-400 z-10 flex flex-col items-center justify-center border-2 border-[#111827] p-6 text-center">
-          <AlertTriangle className="w-12 h-12 text-[#111827] mb-2" />
-          <h2 className="text-xl md:text-2xl font-black text-[#111827] uppercase mb-4 leading-tight">
-            Stopping early will cost you all session XP.<br/>Are you sure?
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center border-2 border-pop-maroon bg-pop-cream p-6 text-center">
+          <AlertTriangle className="mb-2 h-12 w-12 text-zen-terracotta" />
+          <h2 className="mb-4 font-display text-xl font-bold uppercase leading-tight text-pop-maroon md:text-2xl">
+            Stopping early will cost you all session XP.
+            <br />
+            Are you sure?
           </h2>
-          <div className="flex gap-4 w-full max-w-sm">
-            <button 
+          <div className="flex w-full max-w-sm gap-4">
+            <button
+              type="button"
               onClick={cancelFail}
               disabled={isLoading}
-              className="flex-1 brutalist-button bg-white text-[#111827] font-black uppercase"
+              className="btn-pop-secondary flex-1 py-3"
             >
               Cancel
             </button>
-            <button 
-              onClick={confirmFail}
-              disabled={isLoading}
-              className="flex-1 brutalist-button bg-[#111827] text-white font-black uppercase"
-            >
-              {isLoading ? '...' : 'I Give Up'}
+            <button type="button" onClick={confirmFail} disabled={isLoading} className="btn-pop-primary flex-1 py-3">
+              {isLoading ? '...' : 'End session'}
             </button>
           </div>
         </div>
       )}
 
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 bg-white border-[2px] border-[#111827] rounded-full flex items-center justify-center shadow-[2px_2px_0px_#111827]">
-          <Timer className="w-5 h-5 text-[#111827]" />
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-white shadow-pop">
+          <Timer className="h-5 w-5 text-pop-maroon" />
         </div>
-        <h2 className="text-2xl font-black text-[#111827] uppercase tracking-tighter">Focus Timer</h2>
+        <h2 className="font-display text-2xl font-bold uppercase tracking-tight text-pop-maroon">Focus timer</h2>
       </div>
 
-      <div className="bg-white border-[3px] border-[#111827] shadow-[4px_4px_0px_#111827] rounded-3xl px-8 py-6 mb-6">
-        <div className="text-6xl md:text-8xl font-black text-[#111827] tabular-nums tracking-tighter leading-none">
+      <div className="mb-6 rounded-3xl border-[3px] border-pop-maroon bg-pop-white px-8 py-6 shadow-pop">
+        <div className="font-display text-6xl font-bold tabular-nums leading-none tracking-tighter text-pop-maroon md:text-8xl">
           {formatTime(timeLeftMs)}
         </div>
       </div>
 
       <div className="flex gap-4">
         {!isSessionActive ? (
-          <button 
+          <button
+            type="button"
             onClick={handleStart}
             disabled={isLoading}
-            className="brutalist-button bg-green-400 px-8 py-4 flex items-center gap-2 text-xl"
+            className="btn-pop-primary flex items-center gap-2 px-8 py-4 text-xl"
           >
-            <Play className="w-6 h-6 fill-current" />
-            <span className="font-black uppercase tracking-wider">{isLoading ? 'Starting...' : 'Start Focus'}</span>
+            <Play className="h-6 w-6 fill-current" />
+            <span className="font-display uppercase tracking-wider">{isLoading ? 'Starting…' : 'Start focus'}</span>
           </button>
         ) : (
-          <button 
+          <button
+            type="button"
             onClick={handleStopClick}
-            className="brutalist-button bg-red-400 px-8 py-4 flex items-center gap-2 text-xl"
+            className="btn-pop-secondary flex items-center gap-2 border-zen-terracotta bg-zen-terracotta/30 px-8 py-4 text-xl text-pop-maroon"
           >
-            <Square className="w-6 h-6 fill-current" />
-            <span className="font-black uppercase tracking-wider">Stop Early</span>
+            <Square className="h-6 w-6 fill-current" />
+            <span className="font-display uppercase tracking-wider">Stop early</span>
           </button>
         )}
       </div>

@@ -21,129 +21,113 @@ export default function InterceptorModal({ onClose }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-pop-maroon/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-md rounded-[2rem] border-[3px] border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] overflow-hidden">
-        
-        <div className="p-8 flex flex-col gap-6">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <h2 className="text-slate-900 font-black text-3xl uppercase tracking-tighter leading-none">
-              Instagram<br/>Blocked 🛑
+      <div
+        className="relative w-full max-w-md overflow-hidden rounded-3xl border-[3px] border-pop-maroon bg-pop-cream shadow-pop-md"
+        role="dialog"
+        aria-modal="true"
+      >
+        <div className="flex flex-col gap-6 p-6 sm:p-8">
+          <div className="flex items-start justify-between gap-4">
+            <h2 className="font-display text-3xl font-bold uppercase leading-none tracking-tight text-pop-maroon">
+              Instagram
+              <br />
+              Blocked
             </h2>
             <button
+              type="button"
               onClick={onClose}
-              className="w-10 h-10 rounded-full border-2 border-slate-900 hover:bg-slate-100 flex items-center justify-center transition-colors shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-0.5 active:shadow-none"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-white text-pop-maroon shadow-pop transition-all duration-200 hover:-translate-y-0.5 hover:bg-pop-mustard/50"
             >
-              <X className="w-5 h-5 text-slate-900 font-black" />
+              <X className="h-5 w-5" strokeWidth={2.5} />
             </button>
           </div>
 
-          {/* Subtitle */}
           <div>
-            <p className="text-slate-900 text-base font-bold uppercase tracking-wide">
-              Take a mindful moment.
-            </p>
-            <p className="text-slate-700 text-sm font-semibold mt-1">
-              Solve this to unlock access for 15 minutes.
-            </p>
+            <p className="font-display text-base font-bold uppercase tracking-wide text-pop-maroon">Take a mindful moment.</p>
+            <p className="mt-1 font-sans text-sm font-semibold text-pop-maroon">Solve this to unlock access for 15 minutes.</p>
           </div>
 
-          {/* Code Challenge */}
-          <div className="rounded-2xl bg-yellow-100 border-2 border-slate-900 p-5 font-mono text-base font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-            <div className="text-slate-600 text-sm mb-3 font-semibold">{'// What is the output?'}</div>
+          <div className="rounded-3xl border-2 border-pop-maroon bg-pop-mustard/50 p-5 font-mono text-base font-bold text-pop-maroon shadow-pop">
+            <div className="mb-3 font-sans text-sm font-semibold text-pop-maroon/75">{'// What is the output?'}</div>
             <div>
-              <span className="text-blue-700">int</span>{' '}
-              <span>arr[]</span>{' '}
-              <span>= </span>
+              <span className="text-[#3d5a80]">int</span> <span>arr[]</span> <span>= </span>
               <span>{'{'}</span>
-              <span className="text-rose-600">1</span>
+              <span className="text-zen-terracotta">1</span>
               <span>, </span>
-              <span className="text-rose-600">2</span>
+              <span className="text-zen-terracotta">2</span>
               <span>, </span>
-              <span className="text-rose-600">3</span>
+              <span className="text-zen-terracotta">3</span>
               <span>{'}'}</span>
               <span>;</span>
             </div>
             <div className="mt-1">
-              <span className="text-violet-700">cout</span>{' '}
-              <span>{'<<'}</span>{' '}
-              <span>arr</span>
+              <span className="text-[#5c6b7a]">cout</span> <span>{'<<'}</span> <span>arr</span>
               <span>[</span>
-              <span className="text-rose-600">1</span>
+              <span className="text-zen-terracotta">1</span>
               <span>];</span>
             </div>
           </div>
 
-          {/* Answer Input */}
           {submitted === 'idle' && (
-            <div>
-              <input
-                type="text"
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                placeholder="Type the output here..."
-                className="w-full bg-white border-2 border-slate-900 focus:outline-none rounded-full px-5 py-4 text-slate-900 font-bold placeholder-slate-400 text-base shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] focus:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] transition-shadow"
-              />
-            </div>
+            <input
+              type="text"
+              value={answer}
+              onChange={(e) => setAnswer(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              placeholder="Type the output here..."
+              className="input-pop py-4 font-sans text-base"
+            />
           )}
 
-          {/* Feedback States */}
           {submitted === 'correct' && (
-            <div className="rounded-2xl bg-teal-300 border-2 border-slate-900 p-4 flex items-center gap-4 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-              <CheckCircle className="w-8 h-8 text-slate-900 shrink-0" />
+            <div className="flex items-center gap-4 rounded-3xl border-2 border-pop-maroon bg-pop-teal/25 p-4 shadow-pop">
+              <CheckCircle className="h-8 w-8 shrink-0 text-pop-maroon" />
               <div>
-                <p className="text-slate-900 font-black uppercase text-lg leading-tight">Access Granted!</p>
-                <p className="text-slate-800 font-bold text-sm">+25 XP for your focus journey.</p>
+                <p className="font-display text-lg font-bold uppercase leading-tight text-pop-maroon">Access granted</p>
+                <p className="font-sans text-sm font-semibold text-pop-maroon">+25 XP for your focus journey.</p>
               </div>
             </div>
           )}
 
           {submitted === 'wrong' && (
-            <div className="rounded-2xl bg-rose-300 border-2 border-slate-900 p-4 flex items-center gap-4 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]">
-              <XCircle className="w-8 h-8 text-slate-900 shrink-0" />
+            <div className="flex items-center gap-4 rounded-3xl border-2 border-pop-maroon bg-zen-terracotta/25 p-4 shadow-pop">
+              <XCircle className="h-8 w-8 shrink-0 text-pop-maroon" />
               <div>
-                <p className="text-slate-900 font-black uppercase text-lg leading-tight">Try Again!</p>
-                <p className="text-slate-800 font-bold text-sm">Hint: Arrays start at 0.</p>
+                <p className="font-display text-lg font-bold uppercase leading-tight text-pop-maroon">Try again</p>
+                <p className="font-sans text-sm font-semibold text-pop-maroon">Hint: arrays start at 0.</p>
               </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-3 mt-2">
+          <div className="mt-2 flex flex-col gap-3">
             {submitted === 'idle' && (
-              <button
-                onClick={handleSubmit}
-                className="w-full py-4 brutalist-button bg-orange-500 text-slate-900 font-black uppercase text-lg tracking-wider"
-              >
-                Submit & Unlock
+              <button type="button" onClick={handleSubmit} className="btn-pop-primary w-full py-4 text-base">
+                Submit and unlock
               </button>
             )}
             {submitted === 'correct' && (
-              <button
-                onClick={onClose}
-                className="w-full py-4 brutalist-button bg-teal-400 text-slate-900 font-black uppercase text-lg tracking-wider"
-              >
+              <button type="button" onClick={onClose} className="btn-pop-secondary w-full py-4 text-base">
                 Go to Instagram
               </button>
             )}
             {submitted === 'wrong' && (
               <button
-                onClick={() => { setAnswer(''); setSubmitted('idle'); }}
-                className="w-full py-4 brutalist-button bg-violet-400 text-slate-900 font-black uppercase text-lg tracking-wider"
+                type="button"
+                onClick={() => {
+                  setAnswer('');
+                  setSubmitted('idle');
+                }}
+                className="btn-pop-secondary w-full py-4 text-base"
               >
-                Try Again
+                Try again
               </button>
             )}
             <button
+              type="button"
               onClick={onClose}
-              className="w-full py-3 rounded-full text-slate-600 hover:text-slate-900 font-black uppercase text-sm transition-colors mt-2"
+              className="mt-1 w-full rounded-full py-3 font-display text-sm font-bold uppercase text-pop-maroon/70 transition-colors hover:text-pop-maroon"
             >
               Skip for now
             </button>

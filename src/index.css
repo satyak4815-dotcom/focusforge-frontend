@@ -4,58 +4,288 @@
 
 @layer base {
   :root {
-    --neo-yellow: #FCD34D;
-    --neo-orange: #FB923C;
-    --neo-purple: #A78BFA;
-    --neo-turquoise: #6EE7B7;
-    --neo-pink: #FDA4AF;
-    --neo-blue: #7DD3FC;
-    --neo-border: #111827;
+    /* Retro-Modern Flat Pop — strict palette */
+    --pop-teal: #2fb1a2;
+    --pop-mustard: #f4c92e;
+    --pop-maroon: #4b2927;
+    --pop-cream: #f3f3f3;
+    --pop-white: #ffffff;
+
+    /* Surfaces & layout tokens */
+    --bg-mint: var(--pop-cream);
+    --bg-beige: var(--pop-white);
+    --bg-white: var(--pop-white);
+    --card-pink: #fff4d2;
+    --card-purple: #dff6f3;
+    --card-orange: #fff4d2;
+    --card-green: #dff6f3;
+    --card-accent: var(--pop-mustard);
+
+    --border-width: 2px;
+    --border-color: var(--pop-maroon);
+    --radius-major: 24px;
+    --radius-minor: 16px;
+
+    /* Legacy names mapped to the new system */
+    --app-beige: var(--pop-cream);
+    --neo-border: var(--pop-maroon);
+    --neo-yellow: var(--pop-mustard);
+    --neo-orange: var(--pop-maroon);
+    --neo-purple: var(--pop-teal);
+    --neo-turquoise: var(--pop-teal);
+    --neo-pink: var(--pop-mustard);
+    --neo-blue: var(--pop-teal);
+    --neo-coral: var(--pop-mustard);
+
+    /* Zen aliases (used across components) */
+    --zen-forest: var(--pop-maroon);
+    --zen-parchment: var(--pop-cream);
+    --zen-sage: #c8ebe4;
+    --zen-terracotta: #b84a3d;
   }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
   body {
-    @apply font-['Poppins',_sans-serif] min-h-screen text-slate-900;
-    background-color: #F9FAFB;
+    @apply min-h-screen font-sans antialiased;
+    background-color: var(--pop-cream);
+    color: var(--pop-maroon);
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
+
+  input,
+  textarea,
+  select,
+  [contenteditable='true'] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'] {
+    min-height: 44px;
+    min-width: 44px;
+    box-sizing: border-box;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: Oswald, Impact, 'Arial Narrow', sans-serif;
+    @apply font-bold uppercase tracking-tight text-pop-maroon;
+  }
+
+  p,
+  span,
+  li {
+    @apply text-pop-maroon;
   }
 }
 
 @layer components {
+  .neo-brutal-container {
+    border: 2px solid var(--pop-maroon);
+    border-radius: var(--radius-major);
+    box-shadow: 0 12px 40px rgba(75, 41, 39, 0.08);
+    background-color: var(--pop-white);
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .neo-brutal-container-minor {
+    border: 2px solid var(--pop-maroon);
+    border-radius: var(--radius-minor);
+    box-shadow: 0 8px 24px rgba(75, 41, 39, 0.08);
+    @apply transition-all duration-200 ease-in-out;
+  }
+
   .brutalist-card {
-    @apply bg-white rounded-2xl transition-all;
-    border: 2px solid var(--neo-border) !important;
-    box-shadow: 4px 4px 0px var(--neo-border) !important;
-    color: var(--neo-border) !important;
+    @apply rounded-3xl border-2 border-pop-maroon bg-pop-white text-pop-maroon transition-all duration-200 ease-in-out;
+    box-shadow: 0 10px 28px rgba(75, 41, 39, 0.1);
   }
 
   .brutalist-card:hover {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 2px 2px 0px var(--neo-border) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(75, 41, 39, 0.14);
+    border-color: var(--pop-maroon);
+    border-width: 3px;
   }
 
   .brutalist-button {
-    @apply transition-all;
-    border: 2px solid var(--neo-border) !important;
-    box-shadow: 4px 4px 0px var(--neo-border) !important;
-    font-weight: 900 !important;
+    @apply rounded-full border-2 border-pop-maroon font-bold uppercase tracking-wide transition-all duration-200 ease-in-out;
+    box-shadow: 0 6px 18px rgba(75, 41, 39, 0.1);
   }
 
-  .brutalist-button:hover {
-    transform: translate(2px, 2px) !important;
-    box-shadow: 2px 2px 0px var(--neo-border) !important;
+  .brutalist-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(75, 41, 39, 0.16);
+    border-width: 3px;
   }
 
-  .brutalist-button:active {
-    transform: translate(4px, 4px) !important;
-    box-shadow: 0px 0px 0px var(--neo-border) !important;
+  .brutalist-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(75, 41, 39, 0.1);
   }
 
-  @keyframes stat-pop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+  .btn-pop-primary {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-maroon px-6 py-3 font-display text-sm font-semibold uppercase tracking-wide text-pop-white transition-all duration-200 ease-in-out;
+    box-shadow: 0 6px 18px rgba(75, 41, 39, 0.2);
   }
 
-  .animate-stat-pop {
-    animation: stat-pop 0.3s ease-out;
+  .btn-pop-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(75, 41, 39, 0.22);
+    border-width: 3px;
+  }
+
+  .btn-pop-secondary {
+    @apply inline-flex items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-mustard px-6 py-3 font-display text-sm font-semibold uppercase tracking-wide text-pop-maroon transition-all duration-200 ease-in-out;
+    box-shadow: 0 6px 18px rgba(75, 41, 39, 0.12);
+  }
+
+  .btn-pop-secondary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(75, 41, 39, 0.16);
+    border-width: 3px;
+  }
+
+  .input-pop {
+    @apply w-full rounded-full border-2 border-pop-maroon bg-pop-white px-5 py-3 font-sans font-semibold text-pop-maroon outline-none transition-all duration-200 ease-in-out placeholder:text-pop-maroon/45;
+    box-shadow: 0 4px 12px rgba(75, 41, 39, 0.06);
+  }
+
+  .input-pop:focus {
+    @apply ring-2 ring-pop-teal ring-offset-2 ring-offset-pop-cream;
+    border-color: var(--pop-teal);
+  }
+
+  @keyframes wallet-pop {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.03);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .animate-wallet-pop {
+    animation: wallet-pop 0.35s ease-out;
+  }
+
+  .statCard {
+    background-color: var(--pop-white);
+    border: 2px solid var(--pop-maroon);
+    border-radius: var(--radius-major);
+    box-shadow: 0 10px 28px rgba(75, 41, 39, 0.1);
+    padding: 28px 24px;
+    color: var(--pop-maroon);
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .statCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(75, 41, 39, 0.14);
+    border-width: 3px;
+  }
+
+  .statCard--focus {
+    background-color: #dff6f3;
+  }
+
+  .statCard--xp {
+    background-color: #fff9e0;
+  }
+
+  .statCard-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 9999px;
+    background-color: var(--pop-white);
+    border: 2px solid var(--pop-maroon);
+    box-shadow: 0 6px 16px rgba(75, 41, 39, 0.1);
+  }
+
+  @keyframes mascot-message-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .mascot-msg-animate {
+    animation: mascot-message-in 0.45s ease-out both;
+  }
+
+  @keyframes treasure-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-14px);
+    }
+  }
+
+  .treasure-box-bounce {
+    animation: treasure-bounce 1.15s ease-in-out infinite;
+  }
+
+  .statCard-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.25rem;
+    border-radius: 9999px;
+    background-color: var(--pop-white);
+    border: 2px solid var(--pop-maroon);
+    font-family: Oswald, Impact, sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pop-maroon);
+  }
+
+  .statCard-pill--focus {
+    background-color: var(--pop-maroon);
+    color: var(--pop-white);
+    border-color: var(--pop-maroon);
+  }
+
+  .statCard-pill--xp {
+    background-color: var(--pop-mustard);
+    color: var(--pop-maroon);
+    border-color: var(--pop-maroon);
   }
 }
-

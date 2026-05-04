@@ -49,23 +49,26 @@ const defaultMetrics: DashboardMetrics = {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  // Core identity/profile state used across auth + dashboard UI.
   const [username, setUsername] = useState<string>('');
   const [metrics, setMetrics] = useState<DashboardMetrics>(defaultMetrics);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoadingProfile, setIsLoadingProfile] = useState<boolean>(true);
   const [profileError, setProfileError] = useState<string | null>(null);
   
+  // Session runtime state (active session id, timer anchor, and XP baseline).
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const [isSessionActive, setIsSessionActive] = useState<boolean>(false);
   const [baseXP, setBaseXP] = useState<number>(0);
+  // Squad state is mirrored in localStorage to survive refreshes.
   const [squadId, _setSquadId] = useState<string | null>(localStorage.getItem('focusforge_squad_id'));
   const [squadInfo, _setSquadInfo] = useState<{ name: string; code: string } | null>(
     JSON.parse(localStorage.getItem('focusforge_squad_info') || 'null')
   );
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
 
-  // Helpers to keep localStorage in sync
+  // Controlled setters that keep React state and localStorage in sync.
   const setSquadId = useCallback((id: string | null) => {
     _setSquadId(id);
     if (id) localStorage.setItem('focusforge_squad_id', id);
@@ -78,18 +81,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem('focusforge_squad_info');
   }, []);
 
-  // Refs so fetchUserProfile can read current values without being re-created
+  // Refs allow fetchUserProfile to remain stable while still reading latest squad values.
   const squadIdRef = useRef(squadId);
   const squadInfoRef = useRef(squadInfo);
   useEffect(() => { squadIdRef.current = squadId; }, [squadId]);
   useEffect(() => { squadInfoRef.current = squadInfo; }, [squadInfo]);
 
   const logout = useCallback(() => {
+    // Full client-side signout: clear all persisted auth/view/session data.
     localStorage.removeItem('focusforge_token');
     localStorage.removeItem('focusforge_user');
     localStorage.removeItem('focusforge_squad_id');
     localStorage.removeItem('focusforge_squad_info');
     localStorage.removeItem('focusforge_view');
+    localStorage.removeItem('focusforge_role');
+    localStorage.removeItem('focusforge_treasure_eligible');
     setIsAuthenticated(false);
     setUsername('');
     setMetrics(defaultMetrics);
@@ -104,6 +110,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // 1. Global 401 Handler
   useEffect(() => {
+    // Listen for API interceptor auth failures and force logout everywhere.
     const handleUnauthorized = () => logout();
     window.addEventListener('focusforge_unauthorized', handleUnauthorized);
     return () => window.removeEventListener('focusforge_unauthorized', handleUnauthorized);
@@ -114,6 +121,26 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // polling from restarting every time squad state changes, which caused the
   // "flickering revert" race condition on squad creation.
   const fetchUserProfile = useCallback(async (silent = false) => {
+    const role = localStorage.getItem('focusforge_role');
+    if (role === 'parent') {
+      // Parent dashboard uses dedicated parent endpoints.
+      // Avoid hitting kid-only /user/* endpoints for parent accounts.
+      const storedUser = localStorage.getItem('focusforge_user');
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed?.username) {
+            setUsername(parsed.username);
+          }
+        } catch {
+          // Ignore invalid storage payload and continue with fallback UI.
+        }
+      }
+      if (!silent) setIsLoadingProfile(false);
+      return;
+    }
+
+    // Kid path: load profile + stats together for faster dashboard hydration.
     if (!silent) setIsLoadingProfile(true);
     setProfileError(null);
     try {
@@ -133,6 +160,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // Only fetch squad info if we don't have it yet or it changed
         if (!currentSquadInfo || profileRes.squadId !== currentSquadId) {
           try {
+            // Lazy load squad metadata only when missing or changed.
             const res = await squads.getLeaderboard(profileRes.squadId);
             setSquadInfo({ name: res.squadName, code: res.joinCode });
           } catch (e) {
@@ -152,6 +180,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const totalXP = profileRes.focusXP;
       setBaseXP(totalXP);
 
+      // Convert backend totals into dashboard metric model.
       setMetrics({
         focusHours: Number((statsRes.totalFocusMinutes / 60).toFixed(1)),
         distractionsBlocked: statsRes.distractionsBlocked,
@@ -172,6 +201,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const addBlockedSite = async (domain: string) => {
     try {
+      // Dynamic import keeps initial bundle smaller and avoids circular pressure.
       const { blocklist } = await import('./services/api');
       const res = await blocklist.add(domain);
       setBlockedSites(res.blockedSites);
@@ -193,6 +223,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // 3. Initial Auth Check & Fast Fetch
   useEffect(() => {
+    // Rehydrate auth state from local token on page refresh.
     const token = localStorage.getItem('focusforge_token');
     if (token) {
       setIsAuthenticated(true);
@@ -204,18 +235,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // 4. Polling for "Quick" Updates (every 5 seconds for "Live Sync" feel)
   useEffect(() => {
+    // Poll only for kid role. Parent dashboard uses dedicated parent endpoints.
     if (!isAuthenticated) return;
+    if (localStorage.getItem('focusforge_role') === 'parent') return;
     const intervalId = setInterval(() => {
       fetchUserProfile(true); // Silent poll
     }, 5000);
     return () => clearInterval(intervalId);
   }, [isAuthenticated, fetchUserProfile]);
 
-  // 5. Smooth XP Ticking Logic
+  // 5. Smooth XP Ticking Logic & Strict Delta Sync
   useEffect(() => {
     if (!isSessionActive || !sessionStartTime) return;
 
-    const intervalId = setInterval(() => {
+    // Visual XP ticking for responsive UI while session runs.
+    const visualIntervalId = setInterval(() => {
       const elapsedTimeMs = Date.now() - sessionStartTime;
       const displayXP = Math.max(0, (elapsedTimeMs / 60000));
       
@@ -225,14 +259,24 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }));
     }, 1000);
 
-    return () => clearInterval(intervalId);
+    // Persist true XP progress to backend every minute.
+    const syncIntervalId = setInterval(() => {
+      user.addXP(1).catch(err => console.error('Failed to sync XP delta:', err));
+    }, 60000);
+
+    return () => {
+      clearInterval(visualIntervalId);
+      clearInterval(syncIntervalId);
+    };
   }, [isSessionActive, sessionStartTime, baseXP]);
 
   const calculateNextGoal = (level: number) => {
+    // Current reward curve: each level requires level * 1000 XP.
     return level * 1000;
   };
 
   const login = (token: string, userObj: UserProfile) => {
+    // Save auth payload and immediately hydrate profile/metrics.
     localStorage.setItem('focusforge_token', token);
     localStorage.setItem('focusforge_user', JSON.stringify(userObj));
     setIsAuthenticated(true);
@@ -241,6 +285,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const startSession = async () => {
     try {
+      // Create backend session, mark local state active, then publish live status.
       const res = await sessions.start();
       setActiveSessionId(res._id);
       setSessionStartTime(new Date(res.startTime).getTime());
@@ -254,6 +299,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const endSession = async () => {
     if (!activeSessionId) return;
     try {
+      // End backend session and hard-sync returned totals into local metrics.
       const res = await sessions.end(activeSessionId);
       setIsSessionActive(false);
       setActiveSessionId(null);
@@ -271,6 +317,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }));
 
       await fetchUserProfile(true); // Immediate silent refresh
+      localStorage.setItem('focusforge_treasure_eligible', '1');
     } catch (err) {
       throw err instanceof Error ? err : new Error('End session failed');
     }
@@ -279,6 +326,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const failSession = async () => {
     if (!activeSessionId) return;
     try {
+      // Fail session backend-side and refresh profile to reflect penalties/reverts.
       await sessions.fail(activeSessionId);
       setIsSessionActive(false);
       setActiveSessionId(null);

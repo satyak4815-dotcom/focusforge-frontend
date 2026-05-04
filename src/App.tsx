@@ -1,17 +1,15 @@
 import React, { useState } from 'react';
-import { Bell, Settings, Flame, User, LogOut } from 'lucide-react';
-import Sidebar from './components/Sidebar';
-import StatsRow from './components/StatsRow';
-import DopamineChart from './components/DopamineChart';
-import RewardsStore from './components/RewardsStore';
+import { Bell, Settings, User, LogOut } from 'lucide-react';
+import BottomNav from './components/BottomNav';
 import Profile from './components/Profile';
 import Leaderboard from './components/Leaderboard';
 import SquadSync from './components/SquadSync';
 import AuthPage from './components/AuthPage';
+import ParentDashboard from './components/ParentDashboard';
 import { AppProvider, useAppContext } from './AppContext';
 import Skeleton from './components/Skeleton';
-import SessionHistory from './components/SessionHistory';
-import BlockedSitesList from './components/BlockedSitesList';
+import NeoBrutalistStatCards from './components/NeoBrutalistStatCards';
+import DashboardInteractiveLists from './components/DashboardInteractiveLists';
 
 function Dashboard() {
   const [currentView, setCurrentView] = useState<'dashboard' | 'squad' | 'leaderboard' | 'profile'>(
@@ -23,263 +21,145 @@ function Dashboard() {
     localStorage.setItem('focusforge_view', view);
   };
   const [showDropdown, setShowDropdown] = useState(false);
-  const { username, metrics, logout, isLoadingProfile } = useAppContext();
+  const [showHistory, setShowHistory] = useState(false);
+  const [showBlocklist, setShowBlocklist] = useState(false);
+  const { username, logout, isLoadingProfile } = useAppContext();
+
+  const toggleHistory = () => {
+    setShowHistory((prev) => {
+      const next = !prev;
+      if (next) setShowBlocklist(false);
+      return next;
+    });
+  };
+
+  const toggleBlocklist = () => {
+    setShowBlocklist((prev) => {
+      const next = !prev;
+      if (next) setShowHistory(false);
+      return next;
+    });
+  };
+
+  const iconBtn =
+    'brutalist-button flex h-[50px] w-[50px] shrink-0 items-center justify-center rounded-full border-2 border-pop-maroon bg-pop-white p-0 text-pop-maroon transition-all duration-200 ease-in-out hover:-translate-y-0.5';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', minHeight: '100vh' }} className="text-slate-900">
+    <div className="flex min-h-dvh w-full min-w-0 flex-col bg-pop-cream px-3 pt-3 pb-[max(5.75rem,calc(env(safe-area-inset-bottom)+5.25rem))] sm:px-5 sm:pt-5 sm:pb-[max(6.25rem,calc(env(safe-area-inset-bottom)+5.75rem))]">
+      <main className="neo-brutal-container flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-pop-white text-pop-maroon">
+        <header className="sticky top-0 z-30 w-full shrink-0 border-b-4 border-pop-maroon bg-pop-teal text-pop-white">
+          <div className="flex w-full flex-col px-4 py-5 sm:px-8 sm:py-6 lg:px-12">
+            <div className="flex w-full flex-wrap items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                {isLoadingProfile ? (
+                  <Skeleton width="280px" height="36px" className="max-w-full sm:h-11" />
+                ) : (
+                  <h1 className="font-display truncate text-2xl font-bold uppercase leading-tight tracking-tight text-pop-white sm:text-4xl lg:text-[2.75rem]">
+                    What&apos;s up, {username ? username.toUpperCase() : 'WARRIOR'}!
+                  </h1>
+                )}
+                <p className="mt-2 max-w-xl font-sans text-xs font-semibold uppercase tracking-widest text-pop-white/90 sm:text-sm">
+                  Stay sharp. Color-block your day.
+                </p>
+              </div>
 
-      {/* LEFT COLUMN - Sidebar (Fixed 280px) */}
-      <Sidebar currentView={currentView} setCurrentView={handleSetView} />
+              <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+                <button type="button" className={`relative ${iconBtn}`} aria-label="Notifications">
+                  <Bell className="h-5 w-5" strokeWidth={2.25} />
+                  <span className="absolute -right-1 -top-1 flex h-[22px] w-[22px] items-center justify-center rounded-full border-2 border-pop-maroon bg-red-500 text-[10px] font-bold text-pop-white">
+                    2
+                  </span>
+                </button>
 
-      {/* RIGHT COLUMN - Main Dashboard (flex: 1) */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100vh', overflowY: 'auto' }} className="bg-slate-50">
-        {/* ===== HEADER ROW ===== */}
-        <header style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '20px 40px',
-          backgroundColor: '#fff',
-          borderBottom: '2px solid var(--neo-border)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 20,
-        }}>
-          {/* Left: Greeting */}
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: '#22c55e', border: '2px solid var(--neo-border)' }} className="animate-bounce" />
-              <span style={{ fontSize: '12px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#000' }}>Flow Active</span>
-            </div>
-            {isLoadingProfile ? (
-              <Skeleton width="300px" height="40px" />
-            ) : (
-              <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: '#000', letterSpacing: '-0.05em', textTransform: 'uppercase', lineHeight: 1 }}>
-                What's up, {username ? username.toUpperCase() : 'WARRIOR'}!
-              </h1>
-            )}
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Notification - CIRCLE */}
-            <button
-              className="brutalist-button"
-              style={{
-                width: '50px',
-                height: '50px',
-                borderRadius: '50%',
-                backgroundColor: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                padding: 0,
-                flexShrink: 0,
-              }}
-            >
-              <Bell className="w-5 h-5 text-black" />
-              <span style={{
-                position: 'absolute',
-                top: '-6px',
-                right: '-6px',
-                width: '22px',
-                height: '22px',
-                borderRadius: '50%',
-                backgroundColor: '#ef4444',
-                border: '2px solid var(--neo-border)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '10px',
-                fontWeight: 900,
-                color: '#fff',
-              }}>
-                2
-              </span>
-            </button>
-
-            {/* Settings - CIRCLE */}
-            <div style={{ position: 'relative' }}>
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="brutalist-button"
-                style={{
-                  width: '50px',
-                  height: '50px',
-                  borderRadius: '50%',
-                  backgroundColor: '#fff',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 0,
-                  flexShrink: 0,
-                }}
-              >
-                <Settings className="w-5 h-5 text-black" />
-              </button>
-
-              {showDropdown && (
-                <div className="brutalist-card" style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: '100%',
-                  marginTop: '8px',
-                  width: '192px',
-                  backgroundColor: '#fff',
-                  zIndex: 50,
-                  borderRadius: '1rem',
-                  overflow: 'hidden',
-                  display: 'flex',
-                  flexDirection: 'column',
-                }}>
+                <div className="relative">
                   <button
-                    onClick={() => { setCurrentView('profile'); setShowDropdown(false); }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 16px',
-                      fontSize: '14px',
-                      fontWeight: 900,
-                      textTransform: 'uppercase',
-                      color: '#000',
-                      borderBottom: '2px solid var(--neo-border)',
-                      background: 'transparent',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      border: 'none',
-                      borderBottomStyle: 'solid',
-                      borderBottomWidth: '2px',
-                      borderBottomColor: 'var(--neo-border)',
-                    }}
-                    className="hover:bg-slate-100 transition-colors"
+                    type="button"
+                    onClick={() => setShowDropdown(!showDropdown)}
+                    className={iconBtn}
+                    aria-expanded={showDropdown}
+                    aria-label="Settings menu"
                   >
-                    <User className="w-4 h-4 text-black" /> Profile
+                    <Settings className="h-5 w-5" strokeWidth={2.25} />
                   </button>
-                  <button
-                    onClick={() => { logout(); setShowDropdown(false); }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '12px',
-                      padding: '12px 16px',
-                      fontSize: '14px',
-                      fontWeight: 900,
-                      textTransform: 'uppercase',
-                      color: '#000',
-                      backgroundColor: 'var(--neo-orange)',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      border: 'none',
-                    }}
-                    className="hover:opacity-90 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4 text-black" /> Logout
-                  </button>
+
+                  {showDropdown && (
+                    <div
+                      className="absolute right-0 top-full z-50 mt-2 flex w-52 flex-col overflow-hidden rounded-3xl border-2 border-pop-maroon bg-pop-white shadow-pop-md"
+                      role="menu"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCurrentView('profile');
+                          setShowDropdown(false);
+                        }}
+                        className="flex items-center gap-3 border-b-2 border-pop-maroon px-4 py-3 text-left font-display text-sm font-semibold uppercase tracking-wide text-pop-maroon transition-all duration-200 hover:bg-pop-mustard/30"
+                        role="menuitem"
+                      >
+                        <User className="h-4 w-4 shrink-0" /> Profile
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          logout();
+                          setShowDropdown(false);
+                        }}
+                        className="flex items-center gap-3 bg-pop-mustard px-4 py-3 text-left font-display text-sm font-semibold uppercase tracking-wide text-pop-maroon transition-all duration-200 hover:opacity-95"
+                        role="menuitem"
+                      >
+                        <LogOut className="h-4 w-4 shrink-0" /> Logout
+                      </button>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </header>
 
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '24px', width: '100%' }}>
+        <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col bg-pop-cream px-4 py-8 sm:px-8 lg:px-12 xl:px-14 pb-[calc(7.5rem+env(safe-area-inset-bottom))]">
           {currentView === 'squad' ? (
-            <div style={{ marginBottom: '64px' }}>
+            <div className="mb-16">
               <SquadSync />
             </div>
           ) : currentView === 'leaderboard' ? (
-            <div style={{ marginBottom: '64px' }}>
+            <div className="mb-16">
               <Leaderboard />
             </div>
           ) : currentView === 'profile' ? (
-            <div style={{ marginBottom: '64px' }}>
+            <div className="mb-16">
               <Profile />
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%' }}>
-              {/* ===== 5-DAY STREAK BANNER ===== */}
-              <div style={{ width: '100%' }}>
-                {/* Streak Banner */}
-                <div
-                  className="brutalist-card"
-                  style={{
-                    backgroundColor: 'var(--neo-purple)',
-                    padding: '20px 32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    width: '100%',
-                  }}
-                >
-                  <div style={{
-                    width: '56px',
-                    height: '56px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--neo-orange)',
-                    border: '2px solid var(--neo-border)',
-                    boxShadow: '4px 4px 0px var(--neo-border)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}>
-                    <Flame className="w-7 h-7 fill-white text-white" />
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    {isLoadingProfile ? (
-                      <Skeleton width="180px" height="28px" className="mb-2" />
-                    ) : (
-                      <span style={{ fontWeight: 900, fontSize: '22px', textTransform: 'uppercase', marginRight: '8px', color: '#fff' }}>{metrics.streakDays}-Day Streak!</span>
-                    )}
-                    <p style={{ color: '#fff', fontWeight: 900, fontSize: '16px' }}>
-                      You're in the top <span style={{ fontWeight: 900, fontSize: '18px', color: '#000', backgroundColor: 'var(--neo-yellow)', padding: '0 8px', border: '2px solid var(--neo-border)', borderRadius: '9999px' }}>12%</span> of all users this week.
-                    </p>
-                  </div>
-                </div>
-              </div>
+            <div className="flex min-h-0 w-full flex-1 flex-col gap-10">
+              <NeoBrutalistStatCards />
 
-              {/* ===== 3-COLUMN STAT GRID ===== */}
-              <StatsRow />
-
-              {/* ===== FOCUS VS DOOMSCROLLING CHART (Full Width) ===== */}
-              <div style={{ width: '100%' }}>
-                <DopamineChart />
-              </div>
-
-              {/* ===== SESSION HISTORY & BLOCKLIST ===== */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-                <SessionHistory />
-                <BlockedSitesList />
-              </div>
-
-              {/* ===== REWARDS STORE ===== */}
-              <div style={{ width: '100%' }}>
-                <RewardsStore />
-              </div>
+              <DashboardInteractiveLists
+                showHistory={showHistory}
+                showBlocklist={showBlocklist}
+                onToggleHistory={toggleHistory}
+                onToggleBlocklist={toggleBlocklist}
+              />
             </div>
           )}
         </div>
 
-        {/* ===== FOOTER ===== */}
-        <footer style={{
-          padding: '24px 40px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          color: '#0f172a',
-          fontSize: '14px',
-          fontWeight: 700,
-          borderTop: '2px solid var(--neo-border)',
-          backgroundColor: '#fff',
-          marginTop: 'auto',
-        }}>
-          <p style={{ textTransform: 'uppercase' }}>FocusForge v3.0.0</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '40px' }}>
-            <span style={{ cursor: 'pointer', textTransform: 'uppercase' }} className="hover:underline">Privacy</span>
-            <span style={{ cursor: 'pointer', textTransform: 'uppercase' }} className="hover:underline">Terms</span>
-            <span style={{ cursor: 'pointer', textTransform: 'uppercase' }} className="hover:underline">Help</span>
+        <footer className="mt-auto flex w-full flex-wrap items-center justify-between gap-x-8 gap-y-3 border-t-4 border-pop-maroon bg-pop-maroon px-4 py-6 font-sans text-sm font-semibold text-pop-white sm:px-8 lg:px-12 xl:px-14 pb-[calc(6.5rem+env(safe-area-inset-bottom))]">
+          <p className="font-display uppercase tracking-widest">FocusForge v3.0.0</p>
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+            <span className="cursor-pointer uppercase tracking-wide opacity-90 transition-opacity hover:opacity-100">
+              Privacy
+            </span>
+            <span className="cursor-pointer uppercase tracking-wide opacity-90 transition-opacity hover:opacity-100">
+              Terms
+            </span>
+            <span className="cursor-pointer uppercase tracking-wide opacity-90 transition-opacity hover:opacity-100">
+              Help
+            </span>
           </div>
         </footer>
+
+        <BottomNav currentView={currentView} setCurrentView={handleSetView} />
       </main>
     </div>
   );
@@ -287,19 +167,27 @@ function Dashboard() {
 
 function MainApp() {
   const { isAuthenticated, isLoadingProfile } = useAppContext();
+  const isParentAccount = localStorage.getItem('focusforge_role') === 'parent';
 
   if (isLoadingProfile && !isAuthenticated) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB' }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', border: '4px solid #111827', borderTopColor: '#FCD34D', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
-          <p style={{ fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '14px' }}>Loading...</p>
+      <div
+        className="flex min-h-screen items-center justify-center bg-pop-cream px-4"
+        style={{ minHeight: '100vh' }}
+      >
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-pop-maroon border-t-pop-teal" />
+          <p className="font-display text-sm font-bold uppercase tracking-widest text-pop-maroon">Loading...</p>
         </div>
       </div>
     );
   }
 
-  return isAuthenticated ? <Dashboard /> : <AuthPage />;
+  if (!isAuthenticated) {
+    return <AuthPage />;
+  }
+
+  return isParentAccount ? <ParentDashboard /> : <Dashboard />;
 }
 
 export default function App() {

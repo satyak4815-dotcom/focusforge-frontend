@@ -5,10 +5,12 @@ FocusForge is a high-energy, Neo-Brutalist productivity ecosystem designed to he
 ## 🚀 Key Features
 
 - **Gamified Focus**: Earn XP and level up for every minute you stay focused.
-- **Neo-Brutalist UI**: A bold, high-contrast design system featuring Mustard Yellow, Lavender, and Mint Green with thick black borders and sharp shadows.
+- **Neo-Brutalist UI**: A bold, high-contrast design system featuring Mustard Yellow (#FCD34D), Lavender (#A78BFA), and Mint Green (#6EE7B7) with thick black borders and sharp shadows.
 - **Squad Sync**: Real-time social analytics to see how you rank against your squad's focus vs. doomscrolling ratios.
 - **Focus Guard (Extension)**: Active domain blocking with mindfulness-driven interception overlays.
+- **Blocklist Management**: Directly manage your intercepted domains from the dashboard.
 - **Rewards Store**: Redeem your hard-earned XP for brand-name rewards (Zomato, Amazon, etc.).
+- **Parent Portal**: Dedicated dashboard for parents to monitor their linked kids' focus analytics, XP progression, and distraction patterns.
 - **Dynamic Analytics**: 7-day attention breakdown using customized Recharts visualizations.
 
 ## 🛠️ Tech Stack
@@ -17,6 +19,7 @@ FocusForge is a high-energy, Neo-Brutalist productivity ecosystem designed to he
 - **React 18** (TypeScript)
 - **Vite** (Build Tool)
 - **Tailwind CSS** (Styling)
+- **React Context** (State Management)
 - **Recharts** (Data Visualization)
 - **Lucide React** (Icons)
 
@@ -28,7 +31,7 @@ FocusForge is a high-energy, Neo-Brutalist productivity ecosystem designed to he
 
 ### Extension
 - **Chrome Manifest V3**
-- **JavaScript** (Service Workers & Content Scripts)
+- **JavaScript/TypeScript** (Service Workers & Content Scripts)
 
 ## 🏁 Getting Started
 
@@ -38,7 +41,8 @@ FocusForge is a high-energy, Neo-Brutalist productivity ecosystem designed to he
 
 ### 2. Frontend Setup
 ```bash
-cd FocusForge-Production
+# Navigate to the frontend directory
+cd focusforge-frontend
 npm install
 npm run dev
 ```
@@ -46,10 +50,11 @@ Dashboard will be available at `http://localhost:5173`.
 
 ### 3. Backend Setup
 ```bash
-cd Back-end
+# Navigate to the backend directory
+cd focusforge-backend
 npm install
 # Configure your .env with MONGO_URI and JWT_SECRET
-npx nodemon server.js
+npm run dev
 ```
 API will be available at `http://localhost:5000`.
 
@@ -66,6 +71,7 @@ For a deep dive into the system design, data flow, and technology layers, refer 
 FocusForge uses a strict **Neo-Brutalist** aesthetic:
 - **Primary Color**: #FCD34D (Mustard Yellow)
 - **Accent Color**: #A78BFA (Lavender Purple)
+- **Success Color**: #6EE7B7 (Mint Green)
 - **Border**: 2px solid #111827
 - **Shadow**: 4px 4px 0px #111827 (Sharp, non-blurred)
 
