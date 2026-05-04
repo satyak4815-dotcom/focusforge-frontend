@@ -147,6 +147,10 @@ export default function DashboardInteractiveLists({
   const [pieData, setPieData] = useState<{ name: string; count: number }[]>([]);
   const [analysisLoading, setAnalysisLoading] = useState(true);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  /** Recharts pie layout: keep desktop geometry; scale down for narrow viewports. */
+  const [isMdUp, setIsMdUp] = useState(
+    typeof window !== 'undefined' ? window.matchMedia('(min-width: 768px)').matches : true
+  );
 
   /** Robot face: happy while XP is rising (and briefly after), sad when flat. */
   const [xpBoostMood, setXpBoostMood] = useState(false);
@@ -205,6 +209,14 @@ export default function DashboardInteractiveLists({
   }, []);
 
   useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onChange = () => setIsMdUp(mq.matches);
+    onChange();
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
     let mounted = true;
     const loadAnalysis = async () => {
       try {
@@ -247,25 +259,25 @@ export default function DashboardInteractiveLists({
   return (
     <section className="flex w-full flex-col items-center gap-6" aria-label="Session history and blocklist toggles">
       {/*
-        LAYOUT: two-column hero — mascot + message (left), Analysis pie (right) on md+.
-        Robot/Mascot props and mood logic are unchanged; only the surrounding flex container changed.
+        Mobile: single column — mascot + message, then Analysis pie, then toggles (pie sits between mascot and Session History).
+        md+: unchanged two-column row — mascot (left), Analysis pie (right).
       */}
-      <div className="flex w-full max-w-5xl flex-col items-center justify-center gap-12 px-2 md:flex-row md:items-center">
-        <div className="flex w-full min-w-0 flex-1 flex-col items-center gap-4 md:max-w-md md:items-start">
+      <div className="flex w-full max-w-5xl flex-col items-center justify-center gap-6 px-2 md:flex-row md:items-center md:gap-12">
+        <div className="flex w-full min-w-0 flex-col items-center gap-3 md:max-w-md md:flex-1 md:items-start md:gap-4">
           <RobotMascot isFocusing={xpBoostMood} />
           <MascotMessage isFocusing={isSessionActive} />
         </div>
 
         <div
-          className="flex w-full min-w-0 flex-1 flex-col items-center gap-4 md:max-w-md md:items-stretch"
+          className="flex w-full min-w-0 shrink-0 flex-col items-center gap-3 md:max-w-md md:flex-1 md:items-stretch md:gap-4"
           aria-label="Website visit analysis"
         >
           <h2 className="w-full text-center font-display text-xs font-bold uppercase tracking-[0.2em] text-[#4B2927] md:text-left">
             ANALYSIS
           </h2>
-          <div className="relative w-full min-h-[300px] max-w-sm rounded-3xl border-2 border-pop-maroon bg-pop-white px-2 py-4 shadow-pop sm:mx-0 md:max-w-none">
+          <div className="relative w-full min-h-[260px] max-w-[min(100%,22rem)] rounded-3xl border-2 border-pop-maroon bg-pop-white px-2 py-3 shadow-pop md:min-h-[300px] md:max-w-none md:px-2 md:py-4">
             {analysisLoading ? (
-              <div className="flex min-h-[300px] items-center justify-center">
+              <div className="flex min-h-[260px] items-center justify-center md:min-h-[300px]">
                 <Loader2 className="h-8 w-8 animate-spin text-pop-teal" aria-hidden />
               </div>
             ) : analysisError ? (
@@ -275,42 +287,65 @@ export default function DashboardInteractiveLists({
                 No site visits logged yet. Your chart will light up after browsing data syncs.
               </p>
             ) : (
-              <div className="h-[300px] w-full min-w-0">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                <PieChart margin={{ top: 4, right: 8, bottom: 4, left: 8 }}>
-                  <Pie
-                    data={pieData}
-                    dataKey="count"
-                    nameKey="name"
-                    cx="50%"
-                    cy="46%"
-                    innerRadius={0}
-                    outerRadius={78}
-                    paddingAngle={2}
-                    stroke="#4B2927"
-                    strokeWidth={2}
-                    isAnimationActive={false}
+              <div
+                className={
+                  isMdUp
+                    ? 'h-[300px] w-full min-w-0'
+                    : 'h-[min(280px,calc(100vw-4rem))] min-h-[220px] w-full min-w-0'
+                }
+              >
+                <ResponsiveContainer
+                  width="100%"
+                  height="100%"
+                  minWidth={0}
+                  {...(!isMdUp ? { debounce: 50 } : {})}
+                >
+                  <PieChart
+                    margin={
+                      isMdUp
+                        ? { top: 4, right: 8, bottom: 4, left: 8 }
+                        : { top: 4, right: 4, bottom: 2, left: 4 }
+                    }
                   >
-                    {pieData.map((_, index) => (
-                      <Cell key={`slice-${pieData[index]?.name}-${index}`} fill={PIE_SLICE_COLORS[index % PIE_SLICE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={AnalysisTooltip} />
-                  <Legend
-                    verticalAlign="bottom"
-                    align="center"
-                    layout="horizontal"
-                    wrapperStyle={{ fontFamily: 'Oswald, Impact, Arial Narrow, sans-serif', paddingTop: 8 }}
-                    formatter={(value, entry) => {
-                      const count = (entry as { payload?: { count?: number } })?.payload?.count;
-                      return (
-                        <span className="text-[10px] font-bold uppercase text-pop-maroon">
-                          {value} ({typeof count === 'number' ? count : '—'})
-                        </span>
-                      );
-                    }}
-                  />
-                </PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="count"
+                      nameKey="name"
+                      cx="50%"
+                      cy={isMdUp ? '46%' : '42%'}
+                      innerRadius={0}
+                      outerRadius={isMdUp ? 78 : '62%'}
+                      paddingAngle={2}
+                      stroke="#4B2927"
+                      strokeWidth={2}
+                      isAnimationActive={false}
+                    >
+                      {pieData.map((_, index) => (
+                        <Cell key={`slice-${pieData[index]?.name}-${index}`} fill={PIE_SLICE_COLORS[index % PIE_SLICE_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={AnalysisTooltip} />
+                    <Legend
+                      verticalAlign="bottom"
+                      align="center"
+                      layout="horizontal"
+                      wrapperStyle={{
+                        fontFamily: 'Oswald, Impact, Arial Narrow, sans-serif',
+                        paddingTop: isMdUp ? 8 : 4,
+                        width: '100%',
+                      }}
+                      formatter={(value, entry) => {
+                        const count = (entry as { payload?: { count?: number } })?.payload?.count;
+                        return (
+                          <span
+                            className={`font-bold uppercase text-pop-maroon ${isMdUp ? 'text-[10px]' : 'text-[9px]'}`}
+                          >
+                            {value} ({typeof count === 'number' ? count : '—'})
+                          </span>
+                        );
+                      }}
+                    />
+                  </PieChart>
                 </ResponsiveContainer>
               </div>
             )}
@@ -318,7 +353,7 @@ export default function DashboardInteractiveLists({
         </div>
       </div>
 
-      <div className="flex w-full flex-wrap justify-center gap-4 px-1">
+      <div className="flex w-full flex-wrap justify-center gap-4 px-1 max-md:-mt-1 md:mt-0">
         <button type="button" className={paletteBtn} onClick={onToggleHistory}>
           <ChevronDown
             className={`h-5 w-5 shrink-0 text-pop-maroon transition-transform duration-300 ${showHistory ? 'rotate-180' : ''}`}
